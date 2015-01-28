@@ -1,0 +1,17 @@
+{
+  "uuid": "a843da79-1090-4623-ace4-958b6076264b",
+  "shortName": "navball",
+  "longName": "navball",
+  "companyName": "MakeAwesomeHappen",
+  "versionCode": 1,
+  "versionLabel": "1.0",
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {
+    "dummy": 0
+  },
+  "resources": {
+    "media": []
+  }
+}
