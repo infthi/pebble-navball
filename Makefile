@@ -3,7 +3,7 @@ all:
 
 install:        all
 	pebble install --phone 192.168.141.100
-	pebble logs --phone 192.168.141.100
+	pebble logs --debug --phone 192.168.141.100
 
 clean:
 	pebble clean
