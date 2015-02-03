@@ -10,17 +10,21 @@ static void window_load(Window *window) {
   window_set_background_color(window, GColorBlack);
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
+  GSize size = bounds.size;
 
   // Create Layer
-  s_canvas_layer = layer_create(GRect(0, 0, bounds.size.w, bounds.size.h));
-  s_clock_layer = layer_create(GRect(0, 0, bounds.size.w, bounds.size.h-bounds.size.w));
-  layer_add_child(window_layer, s_canvas_layer);
-  layer_add_child(s_canvas_layer, s_clock_layer);
-//  layer_add_child(window_layer, s_clock_layer);
+  s_canvas_layer = bitmap_layer_create(GRect(0, size.h-size.w, size.w, size.w));
+  s_clock_layer = layer_create(GRect(0, 0, size.w, size.h-size.w));
+
+  Layer *navball_layer_layer = bitmap_layer_get_layer(s_canvas_layer);
+
+  layer_add_child(window_layer, navball_layer_layer);
+  layer_add_child(window_layer, s_clock_layer);
 
   // Set the update_proc
-  layer_set_update_proc(s_canvas_layer, navball_update_proc);
+//  layer_set_update_proc(s_canvas_layer, navball_update_proc);
   clock_handle_init(s_clock_layer);
+  navball_init(s_canvas_layer);
   APP_LOG(APP_LOG_LEVEL_INFO, "Done loading window: %p", window);
 }
 

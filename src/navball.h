@@ -9,6 +9,7 @@
 #endif
 
 //__MAIN__  Window *window;
-__NAVBALL__ Layer *s_canvas_layer;
+__NAVBALL__ BitmapLayer *s_canvas_layer;
 
-__NAVBALL__ void navball_update_proc(Layer *this_layer, GContext *ctx);
+__NAVBALL__ void navball_init(BitmapLayer *layer);
+//__NAVBALL__ void navball_update_proc(BitmapLayer *this_layer, GContext *ctx);
