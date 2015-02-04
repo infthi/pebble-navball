@@ -125,14 +125,14 @@ void navball_init(BitmapLayer *this_layer) {
 
   bitmap_layer_set_bitmap(this_layer, navball_bitmap);
 
-  power_layer = text_layer_configure(GRect(0, size.h-21, 84, 21));
-  acc_layer = text_layer_configure(GRect(72, size.h-21, 72, 21));
-  rcs_layer = text_layer_configure(GRect(0, 0, 72, 21));
-  sas_layer = text_layer_configure(GRect(72, 0, 72, 21));
+  power_layer = text_layer_configure(GRect(0, size.h-18, 84, 18));
+  acc_layer = text_layer_configure(GRect(72, size.h-18, 72, 18));
+  rcs_layer = text_layer_configure(GRect(0, -4, 72, 18));
+  sas_layer = text_layer_configure(GRect(72, -4, 72, 18));
 
   acc_data_layer = text_layer_configure(GRect(0, size.h-118, size.w, 50));
 
-  text_layer_set_text(power_layer, "50%");
+  text_layer_set_text(power_layer, "100%");
   text_layer_set_text(acc_layer, "1G");
   text_layer_set_text(rcs_layer, "RCS");
   text_layer_set_text(sas_layer, "SAS");

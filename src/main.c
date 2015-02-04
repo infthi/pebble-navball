@@ -14,12 +14,12 @@ static void window_load(Window *window) {
 
   // Create Layer
   s_canvas_layer = bitmap_layer_create(GRect(0, size.h-size.w, size.w, size.w));
-  s_clock_layer = layer_create(GRect(0, 0, size.w, size.h-size.w));
+  s_clock_layer = layer_create(GRect(0, -8, size.w, 8+size.h-size.w));
 
   Layer *navball_layer_layer = bitmap_layer_get_layer(s_canvas_layer);
 
-  layer_add_child(window_layer, navball_layer_layer);
   layer_add_child(window_layer, s_clock_layer);
+  layer_add_child(window_layer, navball_layer_layer);
 
   // Set the update_proc
 //  layer_set_update_proc(s_canvas_layer, navball_update_proc);

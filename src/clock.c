@@ -49,10 +49,11 @@ void clock_handle_init(Layer *parent_layer) {
 //  text_layer_set_font(text_date_layer, fonts_get_system_font(FONT_KEY_ROBOTO_CONDENSED_21));
 //  layer_add_child(window_layer, text_layer_get_layer(text_date_layer));
 
-  text_time_layer = text_layer_create(GRect(0, 0, 144, 168-144));
-  text_layer_set_text_color(text_time_layer, GColorWhite);
-  text_layer_set_background_color(text_time_layer, GColorClear);
-  text_layer_set_font(text_time_layer, fonts_get_system_font(FONT_KEY_ROBOTO_CONDENSED_21));
+  text_time_layer = text_layer_create(GRect(0, 0, 144, layer_get_bounds(parent_layer).size.h));
+  text_layer_set_text_color(text_time_layer, GColorClear);
+  text_layer_set_background_color(text_time_layer, GColorBlack);
+  text_layer_set_font(text_time_layer, fonts_get_system_font(FONT_KEY_GOTHIC_28_BOLD));
+  text_layer_set_text_alignment(text_time_layer, GTextAlignmentCenter);
   layer_add_child(parent_layer, text_layer_get_layer(text_time_layer));
 
   tick_timer_service_subscribe(MINUTE_UNIT, handle_minute_tick);
