@@ -2,14 +2,8 @@
 #include <navball.h>
 #include <geometry.h>
 
-static const GBitmap *navball_bitmap = NULL;
-uint8_t *bitmap_data = NULL;
-
-TextLayer *power_layer, *acc_layer, *sas_layer, *rcs_layer;
+TextLayer *power_layer, *acc_layer, *sas_layer;
 TextLayer *acc_data_layer;
-
-static uint32_t durations[] = {100, 100, 100, 100, 100};
-
 
 void draw_part(int row_size, int i, int k) {
   if ((k<0)||(k>=144)){
@@ -24,43 +18,6 @@ void draw_part(int row_size, int i, int k) {
 void refresh(){
 //  layer_mark_dirty(bitmap_layer_get_layer(s_canvas_layer));
 }
-
-void update_rcs(bool on){
-  int i,k;
-  uint8_t filler = on?0xff:0;
-  int row_size = navball_bitmap->row_size_bytes;
-  for (i=1; i<72; i++){
-    uint8_t offset = 0;
-    uint8_t remaining = circle_144[i];
-    while (remaining>0){
-      if (remaining>=8){
-	bitmap_data[row_size*(i)+offset] = filler;
-        remaining -= 8;
-        offset++;
-      } else {
-        if (on){
-          bitmap_data[row_size*(i)+offset] |= remaining_left[remaining];
-        } else {
-          bitmap_data[row_size*(i)+offset] &= ~remaining_left[remaining];
-        }
-        remaining = 0;
-      }
-    }
-  }
-  text_layer_set_text_color(rcs_layer, on?GColorBlack:GColorWhite);
-  layer_mark_dirty(bitmap_layer_get_layer(s_canvas_layer));
-  if (on){
-    vibes_double_pulse();
-  } else {
-    vibes_enqueue_custom_pattern((VibePattern){.durations=durations, .num_segments=5});
-  }
-}
-
-void init_rcs(){
-  update_rcs(bluetooth_connection_service_peek());
-  bluetooth_connection_service_subscribe(update_rcs);
-}
-
 
 static void data_handler(AccelData *data, uint32_t num_samples) {
   // Long lived buffer
@@ -116,7 +73,7 @@ TextLayer *text_layer_configure(GRect rect){
   return layer;
 }
 
-void navball_init(BitmapLayer *this_layer) {
+void init_navball(BitmapLayer *this_layer) {
   GSize size = layer_get_bounds(bitmap_layer_get_layer(this_layer)).size;
   navball_bitmap = gbitmap_create_blank(size);
   bitmap_data = (uint8_t*)navball_bitmap->addr;
@@ -141,6 +98,10 @@ void navball_init(BitmapLayer *this_layer) {
 
   init_rcs();
 
-  uint32_t num_samples = 1;
+//  uint32_t num_samples = 1;
 //  accel_data_service_subscribe(num_samples, data_handler);
+}
+
+void deinit_navball(){
+  deinit_rcs();
 }

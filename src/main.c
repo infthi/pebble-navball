@@ -24,7 +24,7 @@ static void window_load(Window *window) {
   // Set the update_proc
 //  layer_set_update_proc(s_canvas_layer, navball_update_proc);
   clock_handle_init(s_clock_layer);
-  navball_init(s_canvas_layer);
+  init_navball(s_canvas_layer);
   APP_LOG(APP_LOG_LEVEL_INFO, "Done loading window: %p", window);
 }
 

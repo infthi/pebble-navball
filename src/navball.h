@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include <rcs.h>
 
 #ifndef __NAVBALL__
 #define __NAVBALL__ extern
@@ -8,8 +9,12 @@
 #define __MAIN__ extern
 #endif
 
-//__MAIN__  Window *window;
 __NAVBALL__ BitmapLayer *s_canvas_layer;
+__NAVBALL__ GBitmap *navball_bitmap;
+__NAVBALL__ uint8_t *bitmap_data;
 
-__NAVBALL__ void navball_init(BitmapLayer *layer);
+//__MAIN__  Window *window;
+
+__NAVBALL__ void init_navball(BitmapLayer *layer);
 //__NAVBALL__ void navball_update_proc(BitmapLayer *this_layer, GContext *ctx);
+
