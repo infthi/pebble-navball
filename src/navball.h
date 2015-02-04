@@ -1,5 +1,6 @@
 #include <pebble.h>
 #include <rcs.h>
+#include <battery.h>
 
 #ifndef __NAVBALL__
 #define __NAVBALL__ extern

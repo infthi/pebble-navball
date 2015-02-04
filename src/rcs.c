@@ -5,7 +5,7 @@
 static uint32_t durations[] = {100, 100, 100, 100, 100};
 
 void update_rcs(bool on){
-  int i,k;
+  int i;
   uint8_t filler = on?0xff:0;
   int row_size = navball_bitmap->row_size_bytes;
   for (i=1; i<72; i++){

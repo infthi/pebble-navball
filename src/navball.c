@@ -2,7 +2,9 @@
 #include <navball.h>
 #include <geometry.h>
 
-TextLayer *pow_layer, *acc_layer, *sas_layer;
+//#define ACC_ENABLED
+
+TextLayer *acc_layer, *sas_layer;
 TextLayer *acc_data_layer;
 
 void draw_part(int row_size, int i, int k) {
@@ -19,6 +21,7 @@ void refresh(){
 //  layer_mark_dirty(bitmap_layer_get_layer(s_canvas_layer));
 }
 
+#ifdef ACC_ENABLED
 static void data_handler(AccelData *data, uint32_t num_samples) {
   // Long lived buffer
   static char s_buffer[128];
@@ -33,7 +36,7 @@ static void data_handler(AccelData *data, uint32_t num_samples) {
   text_layer_set_text(acc_data_layer, s_buffer);
   refresh();
 }
-
+#endif
 
 
 static void draw_interface() {
@@ -81,32 +84,35 @@ void init_navball(BitmapLayer *this_layer) {
 
   bitmap_layer_set_bitmap(this_layer, navball_bitmap);
 
-  pow_layer = text_layer_configure(GRect(0, size.h-18, 84, 18));
   acc_layer = text_layer_configure(GRect(72, size.h-18, 72, 18));
   sas_layer = text_layer_configure(GRect(72, -4, 72, 18));
 
   acc_data_layer = text_layer_configure(GRect(0, size.h-118, size.w, 50));
 
-  text_layer_set_text(pow_layer, "100%");
   text_layer_set_text(acc_layer, "1G");
   text_layer_set_text(sas_layer, "SAS");
   text_layer_set_text_alignment(acc_layer, GTextAlignmentRight);
   text_layer_set_text_alignment(sas_layer, GTextAlignmentRight);
 
   init_rcs();
+  init_battery(size);
 
-//  uint32_t num_samples = 1;
-//  accel_data_service_subscribe(num_samples, data_handler);
+#ifdef ACC_ENABLED
+  uint32_t num_samples = 1;
+  accel_data_service_subscribe(num_samples, data_handler);
+#endif
 }
 
 void deinit_navball(){
+#ifdef ACC_ENABLED
   accel_data_service_unsubscribe();
+#endif
   deinit_rcs();
+  deinit_battery();
 
   text_layer_destroy(acc_data_layer);
   text_layer_destroy(acc_layer);
   text_layer_destroy(sas_layer);
-  text_layer_destroy(pow_layer);
 
   bitmap_layer_destroy(s_canvas_layer);
   gbitmap_destroy(navball_bitmap);
