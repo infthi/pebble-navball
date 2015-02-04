@@ -38,11 +38,12 @@ void handle_minute_tick(struct tm *tick_time, TimeUnits units_changed) {
   APP_LOG(APP_LOG_LEVEL_INFO, "Displaying: %s", time_text);
 }
 
-void clock_handle_deinit(void) {
+void deinit_clock(void) {
   tick_timer_service_unsubscribe();
+  text_layer_destroy(text_time_layer);
 }
 
-void clock_handle_init(Layer *parent_layer) {
+void init_clock(Layer *parent_layer) {
 //  text_date_layer = text_layer_create(GRect(8, 68, 144-8, 168-68));
 //  text_layer_set_text_color(text_date_layer, GColorWhite);
 //  text_layer_set_background_color(text_date_layer, GColorClear);

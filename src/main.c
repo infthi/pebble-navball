@@ -21,15 +21,12 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, s_clock_layer);
   layer_add_child(window_layer, navball_layer_layer);
 
-  // Set the update_proc
-//  layer_set_update_proc(s_canvas_layer, navball_update_proc);
-  clock_handle_init(s_clock_layer);
+  init_clock(s_clock_layer);
   init_navball(s_canvas_layer);
   APP_LOG(APP_LOG_LEVEL_INFO, "Done loading window: %p", window);
 }
 
 static void window_unload(Window *window) {
-//  layer_destroy(s_canvas_layer);
 }
 
 static void init(void) {
@@ -44,8 +41,10 @@ static void init(void) {
 }
 
 static void deinit(void) {
+  deinit_navball();
+  deinit_clock();
+  layer_destroy(s_clock_layer);
   window_destroy(window);
-  clock_handle_deinit();
 }
 
 int main(void) {

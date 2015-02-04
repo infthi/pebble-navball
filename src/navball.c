@@ -2,7 +2,7 @@
 #include <navball.h>
 #include <geometry.h>
 
-TextLayer *power_layer, *acc_layer, *sas_layer;
+TextLayer *pow_layer, *acc_layer, *sas_layer;
 TextLayer *acc_data_layer;
 
 void draw_part(int row_size, int i, int k) {
@@ -69,7 +69,6 @@ TextLayer *text_layer_configure(GRect rect){
   
   Layer *parent = bitmap_layer_get_layer(s_canvas_layer);
   layer_add_child(parent, text_layer_get_layer(layer));
-
   return layer;
 }
 
@@ -82,16 +81,14 @@ void init_navball(BitmapLayer *this_layer) {
 
   bitmap_layer_set_bitmap(this_layer, navball_bitmap);
 
-  power_layer = text_layer_configure(GRect(0, size.h-18, 84, 18));
+  pow_layer = text_layer_configure(GRect(0, size.h-18, 84, 18));
   acc_layer = text_layer_configure(GRect(72, size.h-18, 72, 18));
-  rcs_layer = text_layer_configure(GRect(0, -4, 72, 18));
   sas_layer = text_layer_configure(GRect(72, -4, 72, 18));
 
   acc_data_layer = text_layer_configure(GRect(0, size.h-118, size.w, 50));
 
-  text_layer_set_text(power_layer, "100%");
+  text_layer_set_text(pow_layer, "100%");
   text_layer_set_text(acc_layer, "1G");
-  text_layer_set_text(rcs_layer, "RCS");
   text_layer_set_text(sas_layer, "SAS");
   text_layer_set_text_alignment(acc_layer, GTextAlignmentRight);
   text_layer_set_text_alignment(sas_layer, GTextAlignmentRight);
@@ -103,5 +100,14 @@ void init_navball(BitmapLayer *this_layer) {
 }
 
 void deinit_navball(){
+  accel_data_service_unsubscribe();
   deinit_rcs();
+
+  text_layer_destroy(acc_data_layer);
+  text_layer_destroy(acc_layer);
+  text_layer_destroy(sas_layer);
+  text_layer_destroy(pow_layer);
+
+  bitmap_layer_destroy(s_canvas_layer);
+  gbitmap_destroy(navball_bitmap);
 }

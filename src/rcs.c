@@ -36,10 +36,13 @@ void update_rcs(bool on){
 }
 
 void init_rcs(){
+  rcs_layer = text_layer_configure(GRect(0, -4, 72, 18));
+  text_layer_set_text(rcs_layer, "RCS");
   update_rcs(bluetooth_connection_service_peek());
   bluetooth_connection_service_subscribe(update_rcs);
 }
 
 void deinit_rcs(){
   bluetooth_connection_service_unsubscribe();
+  text_layer_destroy(rcs_layer);
 }

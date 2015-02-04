@@ -1,5 +1,5 @@
 #include <pebble.h>
 
-void clock_handle_deinit(void);
+void deinit_clock(void);
 
-void clock_handle_init(Layer *parent_layer);
+void init_clock(Layer *parent_layer);

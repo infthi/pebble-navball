@@ -16,5 +16,8 @@ __NAVBALL__ uint8_t *bitmap_data;
 //__MAIN__  Window *window;
 
 __NAVBALL__ void init_navball(BitmapLayer *layer);
+__NAVBALL__ void deinit_navball();
+
+__NAVBALL__ TextLayer* text_layer_configure(GRect rect);
 //__NAVBALL__ void navball_update_proc(BitmapLayer *this_layer, GContext *ctx);
 
