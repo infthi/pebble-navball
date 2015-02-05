@@ -50,6 +50,16 @@ static void battery_state_draw(uint8_t percent){
       if (line_end>=8){
         bitmap_data[line_offset+(line_end/8)-1] &= ~remaining_right[rem_left];
       }
+
+      //and now fixing possibly corrupted bar side by redrawing it; code is cipypasted from navball.c
+      uint8_t begin = circle_144[144-real_line];
+      uint8_t end = circle_144[144-real_line-1];
+      int k;
+      if (begin==end)
+        end++;
+      for (k=begin; k<end; k++){
+        draw_part(navball_bitmap->row_size_bytes, real_line, k-8);
+      }
     }
 //    bitmap_data[line_offset] = fill_white?0xff:0x00;
   }
