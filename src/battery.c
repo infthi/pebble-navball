@@ -23,17 +23,34 @@ static void battery_state_draw(uint8_t percent){
   }
   last_battery_state = battery_state;
 
-  begin*=7;
-  end*=7;
+  begin*=6;
+  end*=6;
 
   int line;
 //  APP_LOG(APP_LOG_LEVEL_INFO, "%d - %d : %s", begin, end, fill_white?"white":"black");
   for (line = begin; line<end; line++){
-    int real_line = 144-1-line;
-    int line_end = remaining_left[real_line];
-    int line_begin = remaining_left[real_line]-10;
+    int real_line = 144-line-1;
+    int circle_line = line+1;
+    int line_end = circle_144[circle_line];
     int line_offset = navball_bitmap->row_size_bytes*real_line;
-    bitmap_data[line_offset] = fill_white?0xff:0x00;
+//  APP_LOG(APP_LOG_LEVEL_INFO, "Line %d: %d - %d : %s", line, line_begin, line_end, fill_white?"white":"black");
+
+//    line_begin = 8;
+
+    int rem_right = line_end%8;
+    int rem_left = 8-rem_right;
+    if (fill_white){
+      bitmap_data[line_offset+(line_end/8)] |= remaining_left[rem_right];
+      if (line_end>=8){
+        bitmap_data[line_offset+(line_end/8)-1] |= remaining_right[rem_left];
+      }
+    } else {
+      bitmap_data[line_offset+(line_end/8)] &= ~remaining_left[rem_right];
+      if (line_end>=8){
+        bitmap_data[line_offset+(line_end/8)-1] &= ~remaining_right[rem_left];
+      }
+    }
+//    bitmap_data[line_offset] = fill_white?0xff:0x00;
   }
   refresh();
 }
