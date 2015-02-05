@@ -101,7 +101,7 @@ static void battery_state_handler(BatteryChargeState charge){
     //Show the data
     text_layer_set_text(pow_layer, s_buffer);
     battery_state_draw(charge.charge_percent);
-    charger_setup(true);
+    charger_setup(false);
   }
 }
 
