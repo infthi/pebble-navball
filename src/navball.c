@@ -57,9 +57,9 @@ static void draw_interface() {
 //bottom left
       draw_part(row_size, 144-i, k);
 //G bar
-      draw_part(row_size, 144-i, 152-k);
+      draw_part(row_size, 144-i, 151-k);
 //power bar
-      draw_part(row_size, 144-i, k-9);
+      draw_part(row_size, 144-i, k-8);
     }
   }
 }

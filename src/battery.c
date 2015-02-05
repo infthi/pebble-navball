@@ -38,12 +38,13 @@ static void battery_state_draw(uint8_t percent){
 //    line_begin = 8;
 
     int rem_right = line_end%8;
-    int rem_left = 8-rem_right;
+    int rem_left = 7-rem_right;
     if (fill_white){
       bitmap_data[line_offset+(line_end/8)] |= remaining_left[rem_right];
       if (line_end>=8){
         bitmap_data[line_offset+(line_end/8)-1] |= remaining_right[rem_left];
       }
+
     } else {
       bitmap_data[line_offset+(line_end/8)] &= ~remaining_left[rem_right];
       if (line_end>=8){
@@ -62,18 +63,18 @@ void charge_timer_callback(){
     last_animation_state = 0;
   }
   battery_state_draw(last_animation_state);
-    charge_anim_timer = app_timer_register(500, (AppTimerCallback) charge_timer_callback, NULL);
+  charge_anim_timer = app_timer_register(500, (AppTimerCallback) charge_timer_callback, NULL);
 }
 
 static void charger_setup(bool on){
+  //any way the old timer must be removed
+  if (charge_anim_timer!=NULL){
+    app_timer_cancel(charge_anim_timer);
+    charge_anim_timer = NULL;
+  }
   if (on){
     last_animation_state = 0;
     charge_timer_callback();
-  } else {
-    if (charge_anim_timer!=NULL){
-      app_timer_cancel(charge_anim_timer);
-      charge_anim_timer = NULL;
-    }
   }
 }
 
@@ -90,7 +91,7 @@ static void battery_state_handler(BatteryChargeState charge){
     //Show the data
     text_layer_set_text(pow_layer, s_buffer);
     battery_state_draw(charge.charge_percent);
-    charger_setup(false);
+    charger_setup(true);
   }
 }
 
