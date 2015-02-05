@@ -14,7 +14,7 @@ static void window_load(Window *window) {
 
   // Create Layer
   s_canvas_layer = bitmap_layer_create(GRect(0, size.h-size.w, size.w, size.w));
-  s_clock_layer = layer_create(GRect(0, -8, size.w, 8+size.h-size.w));
+  s_clock_layer = layer_create(GRect(0, -7, size.w, 8+size.h-size.w));
 
   Layer *navball_layer_layer = bitmap_layer_get_layer(s_canvas_layer);
 
