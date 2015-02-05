@@ -1,3 +1,4 @@
+#pragma once
 #ifndef __RCS__
 #define __RCS__ extern
 #endif

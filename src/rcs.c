@@ -1,6 +1,6 @@
 #define __RCS__
 #include <navball.h>
-#include <geometry.h>
+#include <rcs.h>
 
 static uint32_t durations[] = {100, 100, 100, 100, 100};
 
@@ -15,7 +15,7 @@ void update_rcs(bool on){
     uint8_t remaining = circle_144[i];
     while (remaining>0){
       if (remaining>=8){
-    bitmap_data[row_size*(i)+offset] = filler;
+        bitmap_data[row_size*(i)+offset] = filler;
         remaining -= 8;
         offset++;
       } else {

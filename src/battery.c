@@ -1,5 +1,6 @@
 #define __BATTERY__
 #include <navball.h>
+#include <battery.h>
 
 int last_battery_state = 0;
 

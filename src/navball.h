@@ -1,6 +1,4 @@
 #include <pebble.h>
-#include <rcs.h>
-#include <battery.h>
 #include <geometry.h>
 
 #ifndef __NAVBALL__

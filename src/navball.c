@@ -1,6 +1,8 @@
 #define __NAVBALL__
 #include <navball.h>
-#include <geometry.h>
+#include <rcs.h>
+#include <battery.h>
+#include <acc_service.h>
 
 //#define ACC_ENABLED
 
