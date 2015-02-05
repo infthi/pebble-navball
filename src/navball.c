@@ -4,7 +4,6 @@
 #include <battery.h>
 #include <acc_service.h>
 
-//#define ACC_ENABLED
 
 TextLayer *acc_layer, *sas_layer;
 TextLayer *acc_data_layer;
@@ -22,24 +21,6 @@ void draw_part(int row_size, int i, int k) {
 void refresh(){
   layer_mark_dirty(bitmap_layer_get_layer(s_canvas_layer));
 }
-
-#ifdef ACC_ENABLED
-static void data_handler(AccelData *data, uint32_t num_samples) {
-  // Long lived buffer
-  static char s_buffer[128];
-
-  // Compose string of all data for 3 samples
-  snprintf(s_buffer, sizeof(s_buffer), 
-    "N X,Y,Z\n0 %d,%d,%d", 
-    data[0].x, data[0].y, data[0].z
-  );
-
-  //Show the data
-  text_layer_set_text(acc_data_layer, s_buffer);
-  refresh();
-}
-#endif
-
 
 static void draw_interface() {
   int i,k;
@@ -99,16 +80,11 @@ void init_navball(BitmapLayer *this_layer) {
   init_rcs();
   init_battery(size);
 
-#ifdef ACC_ENABLED
-  uint32_t num_samples = 1;
-  accel_data_service_subscribe(num_samples, data_handler);
-#endif
+  init_acc_service();
 }
 
 void deinit_navball(){
-#ifdef ACC_ENABLED
-  accel_data_service_unsubscribe();
-#endif
+  deinit_acc_service();
   deinit_rcs();
   deinit_battery();
 
