@@ -18,7 +18,7 @@ void draw_part(int row_size, int i, int k) {
 
 
 void refresh(){
-//  layer_mark_dirty(bitmap_layer_get_layer(s_canvas_layer));
+  layer_mark_dirty(bitmap_layer_get_layer(s_canvas_layer));
 }
 
 #ifdef ACC_ENABLED

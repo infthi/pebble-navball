@@ -4,6 +4,8 @@
 
 static uint32_t durations[] = {100, 100, 100, 100, 100};
 
+bool initial_setup = true;
+
 void update_rcs(bool on){
   int i;
   uint8_t filler = on?0xff:0;
@@ -27,11 +29,17 @@ void update_rcs(bool on){
     }
   }
   text_layer_set_text_color(rcs_layer, on?GColorBlack:GColorWhite);
-  layer_mark_dirty(bitmap_layer_get_layer(s_canvas_layer));
-  if (on){
-    vibes_double_pulse();
+  refresh();
+
+  if (initial_setup){
+    //to prevent labs on wf loading
+    initial_setup = false;
   } else {
-    vibes_enqueue_custom_pattern((VibePattern){.durations=durations, .num_segments=5});
+    if (on){
+      vibes_double_pulse();
+    } else {
+      vibes_enqueue_custom_pattern((VibePattern){.durations=durations, .num_segments=5});
+    }
   }
 }
 
