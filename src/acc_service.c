@@ -3,12 +3,14 @@
 #include <acc_service.h>
 #include <sas.h>
 
-#define NUM_SAMPLES 50
+#define NUM_SAMPLES 75
 #define THRESHOLD_ALL 400
 #define THRESHOLD_AXIS 200
 
 int16_t old_values[NUM_SAMPLES*3];
 int current_idx = 0;
+int samples_to_check = NUM_SAMPLES;
+bool last_moving = true;
 
 int abs(int x){
   if (x<0)
@@ -16,15 +18,24 @@ int abs(int x){
   return x;
 }
 
-bool last_moving = true;
 
 void set_sample_mode(bool moving){
   if (moving==last_moving){
     return;
   }
+  last_moving = moving;
 //  APP_LOG(APP_LOG_LEVEL_INFO, "ACC DATA: moving: %d %d", moving, rate);
   update_sas(!moving);
-  last_moving = moving;
+
+
+  if (!moving){
+    accel_service_set_sampling_rate(ACCEL_SAMPLING_10HZ);
+    samples_to_check = NUM_SAMPLES*10/25;
+  } else {
+    accel_service_set_sampling_rate(ACCEL_SAMPLING_25HZ);
+    samples_to_check = NUM_SAMPLES;
+  }
+  APP_LOG(APP_LOG_LEVEL_INFO, "Accelerometer power-saving: %s", moving?"OFF":"ON");
 }
 
 void compare_to_old_values(AccelData data){
@@ -35,7 +46,7 @@ void compare_to_old_values(AccelData data){
   int check_idx;
   int max_diff = 0;
   int max_axis_diff = 0;
-  for (check_idx = 1; check_idx <NUM_SAMPLES; check_idx++){
+  for (check_idx = 1; check_idx < samples_to_check; check_idx++){
     int real_idx = current_idx-check_idx;
     if (real_idx<0){
       real_idx = NUM_SAMPLES+real_idx;
