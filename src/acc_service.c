@@ -4,7 +4,8 @@
 #include <sas.h>
 
 #define NUM_SAMPLES 50
-#define THRESHOLD 400
+#define THRESHOLD_ALL 400
+#define THRESHOLD_AXIS 200
 
 int16_t old_values[NUM_SAMPLES*3];
 int current_idx = 0;
@@ -17,8 +18,7 @@ int abs(int x){
 
 bool last_moving = true;
 
-void set_sample_mode(int rate){
-  bool moving = (rate>THRESHOLD);
+void set_sample_mode(bool moving){
   if (moving==last_moving){
     return;
   }
@@ -34,6 +34,7 @@ void compare_to_old_values(AccelData data){
 
   int check_idx;
   int max_diff = 0;
+  int max_axis_diff = 0;
   for (check_idx = 1; check_idx <NUM_SAMPLES; check_idx++){
     int real_idx = current_idx-check_idx;
     if (real_idx<0){
@@ -47,9 +48,16 @@ void compare_to_old_values(AccelData data){
     if (diff>max_diff){
       max_diff = diff;
     }
+
+    if (diff_x>max_axis_diff)
+      max_axis_diff = diff_x;
+    if (diff_y>max_axis_diff)
+      max_axis_diff = diff_y;
+    if (diff_z>max_axis_diff)
+      max_axis_diff = diff_z;
     
-    set_sample_mode(diff);
   }
+  set_sample_mode((max_diff>THRESHOLD_ALL)||(max_axis_diff>THRESHOLD_AXIS));
   
 //  APP_LOG(APP_LOG_LEVEL_INFO, "ACC DATA: %d :: %d %d %d", max_diff, data.x, data.y, data.z);
 
