@@ -7,18 +7,22 @@ void update_sas(bool on){
   uint8_t filler = on?0xff:0;
   int row_size = navball_bitmap->row_size_bytes;
   for (i=1; i<72; i++){
-    uint8_t offset = 0;
+    uint8_t delta = (row_size*8-navball_bitmap->bounds.size.w);
+
+    //uint8_t pixel_delta = (delta%8);
+
+    uint8_t offset = row_size-delta/8-1;
     uint8_t remaining = circle_144[i];
     while (remaining>0){
       if (remaining>=8){
         bitmap_data[row_size*(i)+offset] = filler;
         remaining -= 8;
-        offset++;
+        offset--;
       } else {
         if (on){
-          bitmap_data[row_size*(i)+offset] |= remaining_left[remaining];
+          bitmap_data[row_size*(i)+offset] |= remaining_right[remaining];
         } else {
-          bitmap_data[row_size*(i)+offset] &= ~remaining_left[remaining];
+          bitmap_data[row_size*(i)+offset] &= ~remaining_right[remaining];
         }
         remaining = 0;
       }
