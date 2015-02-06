@@ -3,10 +3,10 @@
 #include <rcs.h>
 #include <sas.h>
 #include <battery.h>
+#include <acc.h>
 #include <acc_service.h>
 
 
-TextLayer *acc_layer;
 TextLayer *acc_data_layer;
 
 void draw_part(int row_size, int i, int k) {
@@ -68,15 +68,12 @@ void init_navball(BitmapLayer *this_layer) {
 
   bitmap_layer_set_bitmap(this_layer, navball_bitmap);
 
-  acc_layer = text_layer_configure(GRect(72, size.h-18, 72, 18));
   acc_data_layer = text_layer_configure(GRect(0, size.h-118, size.w, 50));
-
-  text_layer_set_text(acc_layer, "1G");
-  text_layer_set_text_alignment(acc_layer, GTextAlignmentRight);
 
   init_rcs();
   init_sas();
   init_battery(size);
+  init_acc(size);
 
   init_acc_service();
 }
@@ -86,9 +83,9 @@ void deinit_navball(){
   deinit_rcs();
   deinit_sas();
   deinit_battery();
+  deinit_acc();
 
   text_layer_destroy(acc_data_layer);
-  text_layer_destroy(acc_layer);
 
   bitmap_layer_destroy(s_canvas_layer);
   gbitmap_destroy(navball_bitmap);

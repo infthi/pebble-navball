@@ -47,10 +47,17 @@ static void deinit(void) {
   window_destroy(window);
 }
 
+#include <math.h>
 int main(void) {
   init();
 
   APP_LOG(APP_LOG_LEVEL_INFO, "Done initializing, pushed window: %p", window);
+  int x = fsqrt(1600.0f);
+  APP_LOG(APP_LOG_LEVEL_INFO, "1600: %d", x);
+  x = fsqrt(2500.0f);
+  APP_LOG(APP_LOG_LEVEL_INFO, "2500: %d", x);
+  x = fsqrt(100.0f);
+  APP_LOG(APP_LOG_LEVEL_INFO, "100: %d", x);
 
   app_event_loop();
   deinit();

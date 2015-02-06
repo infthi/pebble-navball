@@ -15,4 +15,8 @@ static const uint8_t circle_144[] = {
 static const uint8_t remaining_right[]  = {0, 128, 192, 224, 240, 248, 252, 254};
 static const uint8_t remaining_left[]   = {0,   1,   3,   7,  15,  31,  63, 127};
 
+float invSqrt(float x);
+
+float fsqrt(float x);
+
 #endif

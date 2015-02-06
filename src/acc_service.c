@@ -1,7 +1,9 @@
 #define __ACCSERVICE__
 #include <pebble.h>
+#include <geometry.h>
 #include <acc_service.h>
 #include <sas.h>
+#include <acc.h>
 
 #define NUM_SAMPLES 75
 #define THRESHOLD_ALL 400
@@ -90,6 +92,8 @@ static void data_handler(AccelData *data, uint32_t num_samples) {
 
 
   compare_to_old_values(data[0]);
+  acc_handler(data[0].x, data[0].y, data[0].z);
+
   //Show the data
 //  text_layer_set_text(acc_data_layer, s_buffer);
 //  refresh();
