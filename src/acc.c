@@ -3,34 +3,41 @@
 #include <acc.h>
 #include <geometry.h>
 
-static void acceleration_state_draw(float state){
-/*  int battery_state = percent/10;
+int last_state = 0;
+
+static void acceleration_state_draw(float acc){
+  if (acc > 4.2f){
+    acc = 4.2f;
+  } else if (acc<0.0f){
+    acc = 0.0f;
+  }
+  int state = acc*70.0f/4.2f;
 
   int begin, end;
   bool fill_white;
-  if (last_battery_state<battery_state){
+  if (last_state<state){
     fill_white = true;
-    begin = last_battery_state;
-    end = battery_state;
-  } else if (last_battery_state>battery_state){
+    begin = last_state;
+    end = state;
+  } else if (last_state>state){
     fill_white = false;
-    begin = battery_state;
-    end = last_battery_state;
+    begin = state;
+    end = last_state;
   } else {
     return;
   }
-  last_battery_state = battery_state;
-
-  begin*=6;
-  end*=6;
+  last_state = state;
 
   int line;
-//  APP_LOG(APP_LOG_LEVEL_INFO, "%d - %d : %s", begin, end, fill_white?"white":"black");
+  uint8_t row_size = navball_bitmap->row_size_bytes;
+  uint8_t delta = (row_size*8-navball_bitmap->bounds.size.w)/8;
+//  APP_LOG(APP_LOG_LEVEL_INFO, "%d - %d : %s; %d", begin, end, fill_white?"white":"black", delta);
+  
   for (line = begin; line<end; line++){
     int real_line = 144-line-1;
     int circle_line = line+1;
     int line_end = circle_144[circle_line];
-    int line_offset = navball_bitmap->row_size_bytes*real_line;
+    int line_offset = row_size*real_line;
 //  APP_LOG(APP_LOG_LEVEL_INFO, "Line %d: %d - %d : %s", line, line_begin, line_end, fill_white?"white":"black");
 
 //    line_begin = 8;
@@ -38,18 +45,19 @@ static void acceleration_state_draw(float state){
     int rem_right = line_end%8;
     int rem_left = 7-rem_right;
     if (fill_white){
-      bitmap_data[line_offset+(line_end/8)] |= remaining_left[rem_right];
+      bitmap_data[line_offset+row_size-delta-(line_end/8)-1] |= remaining_right[rem_right];
       if (line_end>=8){
-        bitmap_data[line_offset+(line_end/8)-1] |= remaining_right[rem_left];
+        bitmap_data[line_offset+row_size-delta-(line_end/8)] |= remaining_left[rem_left];
       }
 
     } else {
-      bitmap_data[line_offset+(line_end/8)] &= ~remaining_left[rem_right];
+      bitmap_data[line_offset+row_size-delta-(line_end/8)-1] &= ~remaining_right[rem_right];
       if (line_end>=8){
-        bitmap_data[line_offset+(line_end/8)-1] &= ~remaining_right[rem_left];
+        bitmap_data[line_offset+row_size-delta-(line_end/8)] &= ~remaining_left[rem_left];
       }
-
-      //and now fixing possibly corrupted bar side by redrawing it; code is cipypasted from navball.c
+/*Fixing bar side is not required since it usually corrupts in lower part, and user will not see it at all*/
+/*Code below is incorrect; it redraws battery bar part since this function is copypasted from power manager*/
+/*      //and now fixing possibly corrupted bar side by redrawing it; code is cipypasted from navball.c
       uint8_t begin = circle_144[144-real_line];
       uint8_t end = circle_144[144-real_line-1];
       int k;
@@ -57,17 +65,16 @@ static void acceleration_state_draw(float state){
         end++;
       for (k=begin; k<end; k++){
         draw_part(navball_bitmap->row_size_bytes, real_line, k-8);
-      }
+      }*/
     }
-//    bitmap_data[line_offset] = fill_white?0xff:0x00;
   }
-  refresh();*/
+  refresh();
 }
 
 void acc_handler(int16_t x, int16_t y, int16_t z){
   static char s_buffer[16];
 
-  float acc = fsqrt((x*x+y*y+z*z)/1000000.0f);
+  float acc = fsqrt(x*x+y*y+z*z)/1000.0f;
   float frac = acc;
   while (frac>1.0f){
     frac-=1.0f;
@@ -86,6 +93,7 @@ void init_acc(GSize size){
   acc_layer = text_layer_configure(GRect(72, size.h-18, 72, 18));
   text_layer_set_text(acc_layer, "1G");
   text_layer_set_text_alignment(acc_layer, GTextAlignmentRight);
+//  acceleration_state_draw(4.2f);
 }
 
 
