@@ -47,8 +47,8 @@ static const uint8_t pixels[] = {
 
 static const uint8_t chess[] = {
     0b10101010,
-    0b01010101,
-}
+    0b01010101
+};
 
 float invSqrt(float x);
 

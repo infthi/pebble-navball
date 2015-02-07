@@ -37,6 +37,9 @@ void update_sas_impl(){
 }
 
 void update_sas(bool enabled){
+  if (on==enabled){
+    return;
+  }
   on = enabled;
   if (update_sas_timer!=NULL){
     app_timer_cancel(update_sas_timer);

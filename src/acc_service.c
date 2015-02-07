@@ -4,6 +4,7 @@
 #include <include/acc_service.h>
 #include <include/sas.h>
 #include <include/acc.h>
+#include <include/navball.h>
 
 #define NUM_SAMPLES 75
 #define THRESHOLD_ALL 400
@@ -35,7 +36,6 @@ void set_sample_mode(bool moving){
   }
   last_moving = moving;
 //  APP_LOG(APP_LOG_LEVEL_INFO, "ACC DATA: moving: %d %d", moving, rate);
-  update_sas(!moving);
 
 
   if (!moving){
@@ -56,7 +56,7 @@ void set_sample_mode(bool moving){
   APP_LOG(APP_LOG_LEVEL_INFO, "Accelerometer power-saving: %s", moving?"OFF":"ON");
 }
 
-void compare_to_old_values(AccelData data){
+bool compare_to_old_values(AccelData data){
   old_values[current_idx*3] = data.x;
   old_values[current_idx*3+1] = data.y;
   old_values[current_idx*3+2] = data.z;
@@ -86,7 +86,8 @@ void compare_to_old_values(AccelData data){
       max_axis_diff = diff_z;
     
   }
-  set_sample_mode((max_diff>THRESHOLD_ALL)||(max_axis_diff>THRESHOLD_AXIS));
+  bool moving = (max_diff>THRESHOLD_ALL)||(max_axis_diff>THRESHOLD_AXIS);
+  set_sample_mode(moving);
   
 //  APP_LOG(APP_LOG_LEVEL_INFO, "ACC DATA: %d :: %d %d %d", max_diff, data.x, data.y, data.z);
 
@@ -94,6 +95,7 @@ void compare_to_old_values(AccelData data){
   if (current_idx==NUM_SAMPLES){
     current_idx=0;
   }
+  return moving;
 };
 
 static void data_handler(AccelData *data, uint32_t num_samples) {
@@ -116,10 +118,12 @@ static void data_handler(AccelData *data, uint32_t num_samples) {
     }
   }
 #endif
-  compare_to_old_values(data[0]);
-
+  bool moving = compare_to_old_values(data[0]);
   float inv_sqrt = invSqrt(data[0].x*data[0].x+data[0].y*data[0].y+data[0].z*data[0].z);
+
+  update_sas(!moving);
   acc_handler(data[0].x, data[0].y, data[0].z, inv_sqrt);
+  render_navball();
 }
 
 void init_acc_service(){
