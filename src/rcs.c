@@ -1,5 +1,5 @@
 #define __RCS__
-#include <include/navball.h>
+#include <include/gui.h>
 #include <include/rcs.h>
 
 static uint32_t durations[] = {100, 100, 100, 100, 100};
@@ -29,7 +29,7 @@ void update_rcs(bool on){
     }
   }
   text_layer_set_text_color(rcs_layer, on?GColorBlack:GColorWhite);
-  refresh();
+  refresh_gui();
 
   if (initial_setup){
     //to prevent labs on wf loading

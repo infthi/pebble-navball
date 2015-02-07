@@ -1,5 +1,5 @@
 #define __ACC__
-#include <include/navball.h>
+#include <include/gui.h>
 #include <include/acc.h>
 #include <include/geometry.h>
 
@@ -73,7 +73,7 @@ static void acceleration_state_draw(float acc){
       }*/
     }
   }
-  refresh();
+  refresh_gui();
 }
 
 void acc_handler(int16_t x, int16_t y, int16_t z, float inv_sqrt){

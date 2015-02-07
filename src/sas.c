@@ -1,5 +1,5 @@
 #define __SAS__
-#include <include/navball.h>
+#include <include/gui.h>
 #include <include/sas.h>
 
 AppTimer *update_sas_timer = NULL;
@@ -32,7 +32,7 @@ void update_sas_impl(){
     }
   }
   text_layer_set_text_color(sas_layer, on?GColorBlack:GColorWhite);
-  refresh();
+  refresh_gui();
   update_sas_timer = NULL;
 }
 

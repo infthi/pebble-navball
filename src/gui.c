@@ -1,5 +1,5 @@
-#define __NAVBALL__
-#include <include/navball.h>
+#define __GUI__
+#include <include/gui.h>
 #include <include/rcs.h>
 #include <include/sas.h>
 #include <include/battery.h>
@@ -9,7 +9,7 @@
 
 TextLayer *acc_data_layer;
 
-void draw_part(int row_size, int i, int k) {
+void draw_circle_part(int row_size, int i, int k) {
   if ((k<0)||(k>=144)){
     return;
   }
@@ -19,7 +19,7 @@ void draw_part(int row_size, int i, int k) {
 }
 
 
-void refresh(){
+void refresh_gui(){
   layer_mark_dirty(bitmap_layer_get_layer(s_canvas_layer));
 }
 
@@ -33,17 +33,17 @@ static void draw_interface() {
       end++;
     for (k=begin; k<end; k++){
 //top left
-      draw_part(row_size, i, k);
+      draw_circle_part(row_size, i, k);
 //top right
-      draw_part(row_size, i, 143-k);
+      draw_circle_part(row_size, i, 143-k);
 //bottom right
-      draw_part(row_size, 144-i, 143-k);
+      draw_circle_part(row_size, 144-i, 143-k);
 //bottom left
-      draw_part(row_size, 144-i, k);
+      draw_circle_part(row_size, 144-i, k);
 //G bar
-      draw_part(row_size, 144-i, 151-k);
+      draw_circle_part(row_size, 144-i, 151-k);
 //power bar
-      draw_part(row_size, 144-i, k-8);
+      draw_circle_part(row_size, 144-i, k-8);
     }
   }
 }
@@ -59,7 +59,7 @@ TextLayer *text_layer_configure(GRect rect){
   return layer;
 }
 
-void init_navball(BitmapLayer *this_layer) {
+void init_gui(BitmapLayer *this_layer) {
   GSize size = layer_get_bounds(bitmap_layer_get_layer(this_layer)).size;
   navball_bitmap = gbitmap_create_blank(size);
   bitmap_data = (uint8_t*)navball_bitmap->addr;
@@ -78,7 +78,7 @@ void init_navball(BitmapLayer *this_layer) {
   init_acc_service();
 }
 
-void deinit_navball(){
+void deinit_gui(){
   deinit_acc_service();
   deinit_rcs();
   deinit_sas();

@@ -1,5 +1,5 @@
 #define __MAIN__
-#include <include/navball.h>
+#include <include/gui.h>
 #include <include/clock.h>
 
 Window *window;
@@ -22,7 +22,7 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, navball_layer_layer);
 
   init_clock(s_clock_layer);
-  init_navball(s_canvas_layer);
+  init_gui(s_canvas_layer);
   APP_LOG(APP_LOG_LEVEL_INFO, "Done loading window: %p", window);
 }
 
@@ -41,7 +41,7 @@ static void init(void) {
 }
 
 static void deinit(void) {
-  deinit_navball();
+  deinit_gui();
   deinit_clock();
   layer_destroy(s_clock_layer);
   window_destroy(window);
@@ -52,12 +52,6 @@ int main(void) {
   init();
 
   APP_LOG(APP_LOG_LEVEL_INFO, "Done initializing, pushed window: %p", window);
-  int x = fsqrt(1600.0f);
-  APP_LOG(APP_LOG_LEVEL_INFO, "1600: %d", x);
-  x = fsqrt(2500.0f);
-  APP_LOG(APP_LOG_LEVEL_INFO, "2500: %d", x);
-  x = fsqrt(100.0f);
-  APP_LOG(APP_LOG_LEVEL_INFO, "100: %d", x);
 
   app_event_loop();
   deinit();

@@ -1,5 +1,5 @@
 #define __BATTERY__
-#include <include/navball.h>
+#include <include/gui.h>
 #include <include/battery.h>
 
 int last_battery_state = 0;
@@ -59,12 +59,12 @@ static void battery_state_draw(uint8_t percent){
       if (begin==end)
         end++;
       for (k=begin; k<end; k++){
-        draw_part(navball_bitmap->row_size_bytes, real_line, k-8);
+        draw_circle_part(navball_bitmap->row_size_bytes, real_line, k-8);
       }
     }
 //    bitmap_data[line_offset] = fill_white?0xff:0x00;
   }
-  refresh();
+  refresh_gui();
 }
 
 uint32_t last_animation_state = 100;
