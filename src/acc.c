@@ -6,11 +6,16 @@
 int last_state = 0;
 
 static void acceleration_state_draw(float acc){
-  if (acc > 4.2f){
-    acc = 4.2f;
+  //acceleration can take values in [0..4] since it is what pebble SDK offers to us.
+  if (acc > 4.0f){
+    acc = 4.0f;
   } else if (acc<0.0f){
     acc = 0.0f;
   }
+  
+  //non-linear bar responcibility looks better
+  acc = fsqrt(acc)*2; //and it is still in [0..4]
+  
   int state = acc*70.0f/4.2f;
 
   int begin, end;
