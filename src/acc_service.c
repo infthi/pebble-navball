@@ -9,10 +9,18 @@
 #define THRESHOLD_ALL 400
 #define THRESHOLD_AXIS 200
 
+#define POWER_SAVE_CALM_STEPS 3
+#define XTREME_POWER_SAVING
+
 int16_t old_values[NUM_SAMPLES*3];
 int current_idx = 0;
 int samples_to_check = NUM_SAMPLES;
 bool last_moving = true;
+
+#ifdef XTREME_POWER_SAVING
+int16_t buffer[] = {0, 0, 0};
+int8_t steps_to_pass = POWER_SAVE_CALM_STEPS;
+#endif
 
 int abs(int x){
   if (x<0)
@@ -33,6 +41,14 @@ void set_sample_mode(bool moving){
   if (!moving){
     accel_service_set_sampling_rate(ACCEL_SAMPLING_10HZ);
     samples_to_check = NUM_SAMPLES*10/25;
+
+#ifdef XTREME_POWER_SAVING
+    buffer[0] = 0;
+    buffer[1] = 0;
+    buffer[2] = 0;
+    steps_to_pass = POWER_SAVE_CALM_STEPS;
+    samples_to_check /= POWER_SAVE_CALM_STEPS;
+#endif
   } else {
     accel_service_set_sampling_rate(ACCEL_SAMPLING_25HZ);
     samples_to_check = NUM_SAMPLES;
@@ -81,22 +97,27 @@ void compare_to_old_values(AccelData data){
 };
 
 static void data_handler(AccelData *data, uint32_t num_samples) {
-  // Long lived buffer
-  static char s_buffer[128];
-
-  // Compose string of all data for 3 samples
-  snprintf(s_buffer, sizeof(s_buffer), 
-    "N X,Y,Z\n0 %d,%d,%d", 
-    data[0].x, data[0].y, data[0].z
-  );
-
-
+#ifdef XTREME_POWER_SAVING
+  if (!last_moving){
+    //we are in power-saving mode
+    buffer[0] += data[0].x/POWER_SAVE_CALM_STEPS;
+    buffer[1] += data[0].y/POWER_SAVE_CALM_STEPS;
+    buffer[2] += data[0].z/POWER_SAVE_CALM_STEPS;
+    if (0 == (--steps_to_pass)){
+      data[0].x = buffer[0];
+      data[0].y = buffer[1];
+      data[0].z = buffer[2];
+      steps_to_pass = POWER_SAVE_CALM_STEPS;
+      buffer[0] = 0;
+      buffer[1] = 0;
+      buffer[2] = 0;
+    } else {
+      return;
+    }
+  }
+#endif
   compare_to_old_values(data[0]);
   acc_handler(data[0].x, data[0].y, data[0].z);
-
-  //Show the data
-//  text_layer_set_text(acc_data_layer, s_buffer);
-//  refresh();
 }
 
 void init_acc_service(){
