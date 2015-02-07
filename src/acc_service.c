@@ -117,7 +117,9 @@ static void data_handler(AccelData *data, uint32_t num_samples) {
   }
 #endif
   compare_to_old_values(data[0]);
-  acc_handler(data[0].x, data[0].y, data[0].z);
+
+  float inv_sqrt = invSqrt(data[0].x*data[0].x+data[0].y*data[0].y+data[0].z*data[0].z);
+  acc_handler(data[0].x, data[0].y, data[0].z, inv_sqrt);
 }
 
 void init_acc_service(){

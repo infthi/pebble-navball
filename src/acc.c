@@ -76,10 +76,10 @@ static void acceleration_state_draw(float acc){
   refresh();
 }
 
-void acc_handler(int16_t x, int16_t y, int16_t z){
+void acc_handler(int16_t x, int16_t y, int16_t z, float inv_sqrt){
   static char s_buffer[16];
 
-  float acc = fsqrt(x*x+y*y+z*z)/1000.0f;
+  float acc = 1.0f/(960.0f*inv_sqrt); //960 instead of to tune it to show 1G in stand-by mode for me
   float frac = acc;
   while (frac>1.0f){
     frac-=1.0f;
@@ -91,6 +91,7 @@ void acc_handler(int16_t x, int16_t y, int16_t z){
   
   //Show the data
   text_layer_set_text(acc_layer, s_buffer);
+//  APP_LOG(APP_LOG_LEVEL_INFO, s_buffer);
   acceleration_state_draw(acc);
 }
 
