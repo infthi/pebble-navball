@@ -1,10 +1,10 @@
 #define __NAVBALL__
-#include <navball.h>
-#include <rcs.h>
-#include <sas.h>
-#include <battery.h>
-#include <acc.h>
-#include <acc_service.h>
+#include <include/navball.h>
+#include <include/rcs.h>
+#include <include/sas.h>
+#include <include/battery.h>
+#include <include/acc.h>
+#include <include/acc_service.h>
 
 
 TextLayer *acc_data_layer;

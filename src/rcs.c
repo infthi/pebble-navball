@@ -1,6 +1,6 @@
 #define __RCS__
-#include <navball.h>
-#include <rcs.h>
+#include <include/navball.h>
+#include <include/rcs.h>
 
 static uint32_t durations[] = {100, 100, 100, 100, 100};
 

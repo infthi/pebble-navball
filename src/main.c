@@ -1,6 +1,6 @@
 #define __MAIN__
-#include <navball.h>
-#include <clock.h>
+#include <include/navball.h>
+#include <include/clock.h>
 
 Window *window;
 Layer *s_clock_layer;

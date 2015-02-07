@@ -1,5 +1,5 @@
 #include <pebble.h>
-#include <geometry.h>
+#include <include/geometry.h>
 
 #ifndef __NAVBALL__
 #define __NAVBALL__ extern

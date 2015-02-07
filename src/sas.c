@@ -1,6 +1,6 @@
 #define __SAS__
-#include <navball.h>
-#include <sas.h>
+#include <include/navball.h>
+#include <include/sas.h>
 
 AppTimer *update_sas_timer = NULL;
 bool on = true;

@@ -1,7 +1,7 @@
 #define __ACC__
-#include <navball.h>
-#include <acc.h>
-#include <geometry.h>
+#include <include/navball.h>
+#include <include/acc.h>
+#include <include/geometry.h>
 
 int last_state = 0;
 

@@ -1,5 +1,5 @@
 #include <pebble.h>
-#include <geometry.h>
+#include <include/geometry.h>
 
 float invSqrt(float x)
 {

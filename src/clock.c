@@ -1,4 +1,5 @@
-#include "clock.h"
+#include <pebble.h>
+#include "include/clock.h"
 
 //TextLayer *text_date_layer;
 TextLayer *text_time_layer;

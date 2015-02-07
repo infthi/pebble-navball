@@ -1,9 +1,9 @@
 #define __ACCSERVICE__
 #include <pebble.h>
-#include <geometry.h>
-#include <acc_service.h>
-#include <sas.h>
-#include <acc.h>
+#include <include/geometry.h>
+#include <include/acc_service.h>
+#include <include/sas.h>
+#include <include/acc.h>
 
 #define NUM_SAMPLES 75
 #define THRESHOLD_ALL 400
