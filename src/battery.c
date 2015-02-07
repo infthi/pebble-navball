@@ -59,7 +59,7 @@ static void battery_state_draw(uint8_t percent){
       if (begin==end)
         end++;
       for (k=begin; k<end; k++){
-        draw_circle_part(navball_bitmap->row_size_bytes, real_line, k-8);
+        draw_circle_part(real_line, k-8);
       }
     }
 //    bitmap_data[line_offset] = fill_white?0xff:0x00;

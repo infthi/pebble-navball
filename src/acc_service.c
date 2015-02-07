@@ -119,11 +119,15 @@ static void data_handler(AccelData *data, uint32_t num_samples) {
   }
 #endif
   bool moving = compare_to_old_values(data[0]);
-  float inv_sqrt = invSqrt(data[0].x*data[0].x+data[0].y*data[0].y+data[0].z*data[0].z);
+  int32_t x = data[0].x;
+  int32_t y = data[0].y;
+  int32_t z = data[0].z;
+  float sqr_sum = x*x+y*y+z*z;
+  float inv_sqrt = invSqrt(sqr_sum);
 
   update_sas(!moving);
   acc_handler(data[0].x, data[0].y, data[0].z, inv_sqrt);
-  render_navball();
+  render_navball(data[0].x, data[0].y, data[0].z, inv_sqrt);
 }
 
 void init_acc_service(){

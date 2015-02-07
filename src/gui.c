@@ -9,7 +9,7 @@
 
 TextLayer *acc_data_layer;
 
-void draw_circle_part(int row_size, int i, int k) {
+void draw_circle_part(int i, int k) {
   if ((k<0)||(k>=144)){
     return;
   }
@@ -25,7 +25,6 @@ void refresh_gui(){
 
 static void draw_interface() {
   int i,k;
-  int row_size = navball_bitmap->row_size_bytes;
   for (i=1; i<72; i++){
     uint8_t begin = circle_144[i];
     uint8_t end = circle_144[i-1];
@@ -33,17 +32,17 @@ static void draw_interface() {
       end++;
     for (k=begin; k<end; k++){
 //top left
-      draw_circle_part(row_size, i, k);
+      draw_circle_part(i, k);
 //top right
-      draw_circle_part(row_size, i, 143-k);
+      draw_circle_part(i, 143-k);
 //bottom right
-      draw_circle_part(row_size, 144-i, 143-k);
+      draw_circle_part(144-i, 143-k);
 //bottom left
-      draw_circle_part(row_size, 144-i, k);
+      draw_circle_part(144-i, k);
 //G bar
-      draw_circle_part(row_size, 144-i, 151-k);
+      draw_circle_part(144-i, 151-k);
 //power bar
-      draw_circle_part(row_size, 144-i, k-8);
+      draw_circle_part(144-i, k-8);
     }
   }
 }
@@ -63,6 +62,7 @@ void init_gui(BitmapLayer *this_layer) {
   GSize size = layer_get_bounds(bitmap_layer_get_layer(this_layer)).size;
   navball_bitmap = gbitmap_create_blank(size);
   bitmap_data = (uint8_t*)navball_bitmap->addr;
+  row_size = navball_bitmap->row_size_bytes;
   
   draw_interface();
 
