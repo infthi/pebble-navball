@@ -12,8 +12,43 @@ static const uint8_t circle_144[] = {
  0, 0, 0,};
 
 
-static const uint8_t remaining_right[]  = {0, 128, 192, 224, 240, 248, 252, 254};
-static const uint8_t remaining_left[]   = {0,   1,   3,   7,  15,  31,  63, 127};
+static const uint8_t remaining_right[] = {
+    0b00000000,
+    0b10000000,
+    0b11000000,
+    0b11100000,
+    0b11110000,
+    0b11111000,
+    0b11111100,
+    0b11111110
+};
+
+static const uint8_t remaining_left[] = {
+    0b00000000,
+    0b00000001,
+    0b00000011,
+    0b00000111,
+    0b00001111,
+    0b00011111,
+    0b00111111,
+    0b01111111
+};
+
+static const uint8_t pixels[] = {
+    0b10000000,
+    0b01000000,
+    0b00100000,
+    0b00010000,
+    0b00001000,
+    0b00000100,
+    0b00000010,
+    0b00000001
+};
+
+static const uint8_t chess[] = {
+    0b10101010,
+    0b01010101,
+}
 
 float invSqrt(float x);
 
