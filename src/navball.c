@@ -98,9 +98,6 @@ inline void draw_line_relative(int16_t ix1, int16_t iy1, int16_t ix2, int16_t iy
   draw_line_pure(ix1+72, iy1+72, ix2+72, iy2+72, on);
 }
 
-int16_t last_x = 0;
-int16_t last_y = 0;
-
 uint8_t level[] = {
 0b00000001,0b10000000,
 0b00000011,0b11000000,
@@ -134,20 +131,70 @@ void draw_level(){
   }
 }
 
-void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
-//  float nxf = x*71.0f*inv_sqrt;
-  int16_t nx = -x*REAL_BALL_SIZE*inv_sqrt;
-  int16_t ny = y*REAL_BALL_SIZE*inv_sqrt;
 
-//  int crt = inv_sqrt;
-//  int rev = 1.0f/inv_sqrt;
+void render_horizont(int16_t zenith_x, int16_t zenith_y, bool is_zenith_above, bool on){
+/*
+We see a navball's horizont as a half of circle's projection on a navball
 
-//  APP_LOG(APP_LOG_LEVEL_INFO, "%d %d %d %d", nx, x, crt, rev);
+The idea: we render a horizont not as a circle projection, but as a simplified polyline.
+Two side point os horizont are already known: it's where navballs diameter perpendicular to 'center-zenith' vector crosses the navball border.
+Third ('pivot') point is a center of horizont, and can be found on the line connecting center and zenith, PI/2 under the zenith.
+No trigonometry; we'll make it one navball radius under the zenith.
+*/
+  int16_t z_vector_length = zenith_x*zenith_x+zenith_y*zenith_y;
+  if (z_vector_length<4) {
+    //zenith is almost in the center of navball; horizont invisible
+    return;
+  }
+  int16_t norm_z_vector_length = REAL_BALL_SIZE*REAL_BALL_SIZE;
+  float z_vector_koeff = fsqrt((float)norm_z_vector_length/(float)z_vector_length);
 
-  draw_line_relative(0,0,last_x,last_y, false);
-  draw_line_relative(0,0,nx,ny, true);
-  last_x = nx;
-  last_y = ny;
+  int16_t z_x_norm = zenith_x*z_vector_koeff;
+  int16_t z_y_norm = zenith_y*z_vector_koeff;
+
+  int16_t side_1_x = z_y_norm;
+  int16_t side_1_y = -z_x_norm;
+  int16_t side_2_x = -z_y_norm;
+  int16_t side_2_y = z_x_norm;
+
+  int16_t pivot_x;
+  int16_t pivot_y;
   
+  if (is_zenith_above){
+    //zenith is above the navball (and is visible), horizont one radius below the zenith
+    pivot_x = zenith_x-z_x_norm;
+    pivot_y = zenith_y-z_y_norm;
+  } else {
+    //zenith is below the navball (and is invisible)
+//    int16_t remaining_x = z_x_norm;
+//    int16_t remaining_y = z_y_norm;
+    pivot_x = z_x_norm-zenith_x;
+    pivot_y = z_y_norm-zenith_y;
+  }
+
+  draw_line_relative(side_1_x, side_1_y, pivot_x, pivot_y, on);
+  draw_line_relative(pivot_x, pivot_y, side_2_x, side_2_y, on);
+}
+
+int16_t last_x = 0;
+int16_t last_y = 0;
+bool last_zenith_up = false;
+
+void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
+  int16_t zenith_x = -x*REAL_BALL_SIZE*inv_sqrt;
+  int16_t zenith_y = y*REAL_BALL_SIZE*inv_sqrt;
+
+  //(re-)draw line connecting center and zenith
+  {
+    render_horizont(last_x, last_y, last_zenith_up, false);
+    draw_line_relative(0,0,last_x,last_y, false);
+    last_x = zenith_x;
+    last_y = zenith_y;
+    last_zenith_up = z<0;
+    render_horizont(last_x, last_y, last_zenith_up, true);
+    draw_line_relative(0,0,last_x,last_y, true);
+  }
+  
+  //finally, draw v-level
   draw_level();
 }
