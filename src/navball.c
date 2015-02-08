@@ -100,6 +100,39 @@ inline void draw_line_relative(int16_t ix1, int16_t iy1, int16_t ix2, int16_t iy
 int16_t last_x = 0;
 int16_t last_y = 0;
 
+uint8_t level[] = {
+0b00000001,0b10000000,
+0b00000011,0b11000000,
+0b10000011,0b11000001,
+0b11000001,0b10000011,
+0b11100000,0b00000111,
+0b01110000,0b00001110,
+0b00111000,0b00011100,
+0b00011100,0b00111000,
+0b00001110,0b01110000,
+0b00000111,0b11100000,
+0b00000001,0b10000000
+};
+
+void draw_level(){
+  uint8_t y = 71;
+  for (y=71; y<73; y++){
+    int offset = row_size*y+5;
+    bitmap_data[offset++] = 0xff;//40-
+    bitmap_data[offset++] = 0xff;//   48-
+    bitmap_data[offset++] = 0xff;//      64
+    offset+=2;
+    bitmap_data[offset++] = 0xff;//80-
+    bitmap_data[offset++] = 0xff;//   96-
+    bitmap_data[offset++] = 0xff;//      112
+  }
+  for (y=0; y<11; y++){
+    int offset = row_size*(69+y)+8;
+    bitmap_data[offset++] |= level[y*2+1];//I still do not understand why they are mirrored. bit order?
+    bitmap_data[offset++] |= level[y*2];
+  }
+}
+
 void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
 //  float nxf = x*71.0f*inv_sqrt;
   int16_t nx = -x*71*inv_sqrt;
@@ -114,4 +147,6 @@ void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
   draw_line_relative(0,0,nx,ny, true);
   last_x = nx;
   last_y = ny;
+  
+  draw_level();
 }
