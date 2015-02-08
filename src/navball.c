@@ -22,7 +22,7 @@ inline void put_pixel(uint8_t x, uint8_t y){
 }
 
 void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1, bool on){
-  int16_t x0,y0,x1,y1;
+  int16_t x0,y0,x1;//,y1;
   int16_t dx=ix1-ix0;
   int16_t dy=iy1-iy0;
 
@@ -36,7 +36,7 @@ void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1, bool on)
       y0 = ix0;
 
       x1 = iy1;
-      y1 = ix1;
+//      y1 = ix1;
 
       int16_t tmp = dx;
       dx = dy;
@@ -46,7 +46,7 @@ void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1, bool on)
       y0 = ix1;
 
       x1 = iy0;
-      y1 = ix0;
+//      y1 = ix0;
 
       int16_t tmp = dx;
       dx = -dy;
@@ -57,12 +57,12 @@ void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1, bool on)
       x0 = ix0;
       y0 = iy0;
       x1 = ix1;
-      y1 = iy1;
+//      y1 = iy1;
     } else {
       x0 = ix1;
       y0 = iy1;
       x1 = ix0;
-      y1 = iy0;
+//      y1 = iy0;
 
       dx = -dx;
       dy = -dy;
@@ -92,7 +92,6 @@ void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1, bool on)
       reverse?hide_pixel(y,x):hide_pixel(x,y);
     }
   }
-  y = y1;
 }
 
 inline void draw_line_relative(int16_t ix1, int16_t iy1, int16_t ix2, int16_t iy2, bool on){
