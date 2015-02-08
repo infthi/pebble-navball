@@ -131,6 +131,13 @@ void draw_level(){
   }
 }
 
+//minimal size which looks smooth enough
+#define SIDE_SIZE_LARGE 10
+#define SIDE_SIZE_FAST 3
+int16_t side_points_large[SIDE_SIZE_LARGE*4];
+int16_t pivot_koeff_large[SIDE_SIZE_LARGE];
+int16_t side_points_fast[SIDE_SIZE_FAST*4];
+int16_t pivot_koeff_fast[SIDE_SIZE_FAST];
 
 void render_horizont(int16_t zenith_x, int16_t zenith_y, bool is_zenith_above, bool on){
 /*
@@ -141,6 +148,9 @@ Two side point os horizont are already known: it's where navballs diameter perpe
 Third ('pivot') point is a center of horizont, and can be found on the line connecting center and zenith, PI/2 under the zenith.
 No trigonometry; we'll make it one navball radius under the zenith.
 */
+  int16_t *side_points, *pivot_koeff;
+  int16_t SIDE_SIZE;
+
   int16_t z_vector_length = zenith_x*zenith_x+zenith_y*zenith_y;
   if (z_vector_length<4) {
     //zenith is almost in the center of navball; horizont invisible
@@ -149,13 +159,23 @@ No trigonometry; we'll make it one navball radius under the zenith.
   int16_t norm_z_vector_length = REAL_BALL_SIZE*REAL_BALL_SIZE;
   float z_vector_koeff = fsqrt((float)norm_z_vector_length/(float)z_vector_length);
 
+  if (z_vector_koeff<2){
+    SIDE_SIZE = SIDE_SIZE_FAST;
+    side_points = side_points_fast;
+    pivot_koeff = pivot_koeff_fast;
+  } else {
+    SIDE_SIZE = SIDE_SIZE_LARGE;
+    side_points = side_points_large;
+    pivot_koeff = pivot_koeff_large;
+  }
+
   int16_t z_x_norm = zenith_x*z_vector_koeff;
   int16_t z_y_norm = zenith_y*z_vector_koeff;
 
-  int16_t side_1_x = z_y_norm;
-  int16_t side_1_y = -z_x_norm;
-  int16_t side_2_x = -z_y_norm;
-  int16_t side_2_y = z_x_norm;
+  side_points[0] = z_y_norm;
+  side_points[1] = -z_x_norm;
+  side_points[SIDE_SIZE*4-2] = -z_y_norm;
+  side_points[SIDE_SIZE*4-1] = z_x_norm;
 
   int16_t pivot_x;
   int16_t pivot_y;
@@ -172,13 +192,43 @@ No trigonometry; we'll make it one navball radius under the zenith.
     pivot_y = z_y_norm-zenith_y;
   }
 
-  draw_line_relative(side_1_x, side_1_y, pivot_x, pivot_y, on);
-  draw_line_relative(pivot_x, pivot_y, side_2_x, side_2_y, on);
+  int side_point_idx;
+  for (side_point_idx=1; side_point_idx<SIDE_SIZE; side_point_idx++){
+    int side_koeff = SIDE_SIZE-side_point_idx;
+    side_points[side_point_idx*2] = side_points[0]*side_koeff/SIDE_SIZE+pivot_x*pivot_koeff[side_point_idx]/100;
+    side_points[side_point_idx*2+1] = side_points[1]*side_koeff/SIDE_SIZE+pivot_y*pivot_koeff[side_point_idx]/100;
+    side_points[SIDE_SIZE*4-side_point_idx*2-2] = side_points[SIDE_SIZE*4-2]*side_koeff/SIDE_SIZE+pivot_x*pivot_koeff[side_point_idx]/100;
+    side_points[SIDE_SIZE*4-side_point_idx*2-1] = side_points[SIDE_SIZE*4-1]*side_koeff/SIDE_SIZE+pivot_y*pivot_koeff[side_point_idx]/100;
+//int16_t test_x = side_points[0]/2+pivot_x*4/5;
+//int16_t test_y = side_points[1]/2+pivot_y*4/5;
+  }
+
+  int idx;
+  for (idx=0; idx<SIDE_SIZE-1; idx++){
+    draw_line_relative(side_points[idx*2], side_points[idx*2+1], side_points[idx*2+2], side_points[idx*2+3], on);
+    draw_line_relative(side_points[SIDE_SIZE*4-4-idx*2], side_points[SIDE_SIZE*4-4-idx*2+1], side_points[SIDE_SIZE*4-4-idx*2+2], side_points[SIDE_SIZE*4-4-idx*2+3], on);
+//    draw_line_relative(side_points[0], side_points[1], test_x, test_y, on);
+  }
+  draw_line_relative(side_points[idx*2], side_points[idx*2+1], pivot_x, pivot_y, on);
+  draw_line_relative(side_points[SIDE_SIZE*4-2-idx*2], side_points[SIDE_SIZE*4-2-idx*2+1], pivot_x, pivot_y, on);
+//  draw_line_relative(pivot_x, pivot_y, side_points[SIDE_SIZE*4-2], side_points[SIDE_SIZE*4-1], on);
 }
 
 int16_t last_x = 0;
 int16_t last_y = 0;
 bool last_zenith_up = false;
+
+void init_navball(){
+  int i;
+  for (i=0; i<SIDE_SIZE_LARGE; i++){
+    float projection = (float)(SIDE_SIZE_LARGE-i)/(float)SIDE_SIZE_LARGE;
+    pivot_koeff_large[i] = 100.0*fsqrt(1.0-projection*projection);
+  }
+  for (i=0; i<SIDE_SIZE_FAST; i++){
+    float projection = (float)(SIDE_SIZE_FAST-i)/(float)SIDE_SIZE_FAST;
+    pivot_koeff_fast[i] = 100.0*fsqrt(1.0-projection*projection);
+  }
+}
 
 void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
   int16_t zenith_x = -x*REAL_BALL_SIZE*inv_sqrt;
@@ -187,12 +237,12 @@ void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
   //(re-)draw line connecting center and zenith
   {
     render_horizont(last_x, last_y, last_zenith_up, false);
-    draw_line_relative(0,0,last_x,last_y, false);
+//    draw_line_relative(0,0,last_x,last_y, false);
     last_x = zenith_x;
     last_y = zenith_y;
     last_zenith_up = z<0;
     render_horizont(last_x, last_y, last_zenith_up, true);
-    draw_line_relative(0,0,last_x,last_y, true);
+//    draw_line_relative(0,0,last_x,last_y, true);
   }
   
   //finally, draw v-level

@@ -4,6 +4,7 @@
 #include <include/sas.h>
 #include <include/battery.h>
 #include <include/acc.h>
+#include <include/navball.h>
 #include <include/acc_service.h>
 
 
@@ -74,6 +75,7 @@ void init_gui(BitmapLayer *this_layer) {
   init_sas();
   init_battery(size);
   init_acc(size);
+  init_navball();
 
   init_acc_service();
 }
