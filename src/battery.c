@@ -30,7 +30,7 @@ static void battery_state_draw(uint8_t percent){
   int line;
 //  APP_LOG(APP_LOG_LEVEL_INFO, "%d - %d : %s", begin, end, fill_white?"white":"black");
   for (line = begin; line<end; line++){
-    int real_line = 144-line-1;
+    int real_line = 143-line-1;
     int circle_line = line+1;
     int line_end = circle_144[circle_line];
     int line_offset = navball_bitmap->row_size_bytes*real_line;

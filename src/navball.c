@@ -1,6 +1,7 @@
 #include <include/gui.h>
+#include <include/geometry.h>
 
-#define REAL_BALL_SIZE 70
+#define REAL_BALL_SIZE 71
 
 uint8_t begin[2], end[2];
 uint8_t y_step;
@@ -9,19 +10,13 @@ uint8_t y_step;
 //    return (x>0)?x:-x;
 //}
 
-inline void hide_pixel(uint8_t x, uint8_t y){
-  int offset = row_size*(y)+(x/8);
-  uint8_t flag = 1<<(x%8);
-  bitmap_data[offset] &= ~flag;
-}
-
 inline void put_pixel(uint8_t x, uint8_t y){
   int offset = row_size*(y)+(x/8);
   uint8_t flag = 1<<(x%8);
   bitmap_data[offset] |= flag;
 }
 
-void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1, bool on){
+void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1){
   int16_t x0,y0,x1;//,y1;
   int16_t dx=ix1-ix0;
   int16_t dy=iy1-iy0;
@@ -73,11 +68,9 @@ void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1, bool on)
   dy*=diff_y;
 
   int16_t D = 2*dy - dx;
-  if (on){
-    reverse?put_pixel(y0,x0):put_pixel(x0,y0);
-  } else {
-    reverse?hide_pixel(y0,x0):hide_pixel(x0,y0);
-  }
+  
+  reverse?put_pixel(y0,x0):put_pixel(x0,y0);
+  
   int16_t x, y=y0;
   for (x = x0+1; x<=x1; x++){
     if (D > 0){
@@ -86,16 +79,12 @@ void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1, bool on)
     } else {
       D = D + (2*dy);
     }
-    if (on){
-      reverse?put_pixel(y,x):put_pixel(x,y);
-    } else {
-      reverse?hide_pixel(y,x):hide_pixel(x,y);
-    }
+    reverse?put_pixel(y,x):put_pixel(x,y);
   }
 }
 
-inline void draw_line_relative(int16_t ix1, int16_t iy1, int16_t ix2, int16_t iy2, bool on){
-  draw_line_pure(ix1+72, iy1+72, ix2+72, iy2+72, on);
+inline void draw_line_relative(int16_t ix1, int16_t iy1, int16_t ix2, int16_t iy2){
+  draw_line_pure(ix1+72, iy1+72, ix2+72, iy2+72);
 }
 
 uint8_t level[] = {
@@ -114,7 +103,7 @@ uint8_t level[] = {
 
 void draw_level(){
   uint8_t y = 71;
-  for (y=71; y<73; y++){
+  for (y=72; y<74; y++){
     int offset = row_size*y+5;
     bitmap_data[offset++] = 0xff;//40-
     bitmap_data[offset++] = 0xff;//   48-
@@ -125,7 +114,7 @@ void draw_level(){
     bitmap_data[offset++] = 0xff;//      112
   }
   for (y=0; y<11; y++){
-    int offset = row_size*(69+y)+8;
+    int offset = row_size*(70+y)+8;
     bitmap_data[offset++] |= level[y*2+1];//I still do not understand why they are mirrored. bit order?
     bitmap_data[offset++] |= level[y*2];
   }
@@ -139,7 +128,7 @@ int16_t pivot_koeff_large[SIDE_SIZE_LARGE];
 int16_t side_points_fast[SIDE_SIZE_FAST*4];
 int16_t pivot_koeff_fast[SIDE_SIZE_FAST];
 
-void render_horizont(int16_t zenith_x, int16_t zenith_y, bool is_zenith_above, bool on){
+void render_horizont(int16_t zenith_x, int16_t zenith_y, bool is_zenith_above){
 /*
 We see a navball's horizont as a half of circle's projection on a navball
 
@@ -205,12 +194,12 @@ No trigonometry; we'll make it one navball radius under the zenith.
 
   int idx;
   for (idx=0; idx<SIDE_SIZE-1; idx++){
-    draw_line_relative(side_points[idx*2], side_points[idx*2+1], side_points[idx*2+2], side_points[idx*2+3], on);
-    draw_line_relative(side_points[SIDE_SIZE*4-4-idx*2], side_points[SIDE_SIZE*4-4-idx*2+1], side_points[SIDE_SIZE*4-4-idx*2+2], side_points[SIDE_SIZE*4-4-idx*2+3], on);
+    draw_line_relative(side_points[idx*2], side_points[idx*2+1], side_points[idx*2+2], side_points[idx*2+3]);
+    draw_line_relative(side_points[SIDE_SIZE*4-4-idx*2], side_points[SIDE_SIZE*4-4-idx*2+1], side_points[SIDE_SIZE*4-4-idx*2+2], side_points[SIDE_SIZE*4-4-idx*2+3]);
 //    draw_line_relative(side_points[0], side_points[1], test_x, test_y, on);
   }
-  draw_line_relative(side_points[idx*2], side_points[idx*2+1], pivot_x, pivot_y, on);
-  draw_line_relative(side_points[SIDE_SIZE*4-2-idx*2], side_points[SIDE_SIZE*4-2-idx*2+1], pivot_x, pivot_y, on);
+  draw_line_relative(side_points[idx*2], side_points[idx*2+1], pivot_x, pivot_y);
+  draw_line_relative(side_points[SIDE_SIZE*4-2-idx*2], side_points[SIDE_SIZE*4-2-idx*2+1], pivot_x, pivot_y);
 //  draw_line_relative(pivot_x, pivot_y, side_points[SIDE_SIZE*4-2], side_points[SIDE_SIZE*4-1], on);
 }
 
@@ -230,18 +219,64 @@ void init_navball(){
   }
 }
 
+void clean_up(){
+  int y = 0, remaining, done;
+  uint8_t delta = 2;
+  uint8_t last_offset_x = circle_144[0];
+  uint8_t prev_offset_x = last_offset_x;
+  for (y = 1; y<72; y++){
+    int offset_top = y*row_size;
+    int offset_bottom = (143-y)*row_size;
+    //offcet in pixels from circle border to circle middle line
+    int offset_x = circle_144[y-1]; //same offset as previous line; we need smaller offset
+    if (offset_x==circle_144[y]){
+      offset_x++;
+    }
+
+    int mod = (offset_x)%8;
+
+    if (mod!=0){
+        uint8_t roffset = 8-mod;
+	bitmap_data[offset_top+offset_x/8] &= ~remaining_right[roffset];
+	bitmap_data[offset_top+row_size-delta-1-offset_x/8] &= ~remaining_left[roffset];
+	bitmap_data[offset_bottom+offset_x/8] &= ~remaining_right[roffset];
+	bitmap_data[offset_bottom+row_size-delta-1-offset_x/8] &= ~remaining_left[roffset];
+	offset_x+=roffset;
+    }
+    while (offset_x<72) {
+	bitmap_data[offset_top+offset_x/8] = 0;
+	bitmap_data[offset_top+row_size-delta-1-offset_x/8] = 0;
+	bitmap_data[offset_bottom+offset_x/8] = 0;
+	bitmap_data[offset_bottom+row_size-delta-1-offset_x/8] = 0;
+	offset_x+=8;
+    }
+/*
+
+    remaining = 72-circle_144[y];
+    done = 0;
+    bitmap_data[offset_top+]
+
+    while (remaining>=8){
+	remaining-=8;
+	
+	bitmap_data[offset_top+(72-done)/8] = 0xff;
+    }*/
+  }
+}
+
 void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
+  clean_up();
   int16_t zenith_x = -x*REAL_BALL_SIZE*inv_sqrt;
   int16_t zenith_y = y*REAL_BALL_SIZE*inv_sqrt;
 
   //(re-)draw line connecting center and zenith
   {
-    render_horizont(last_x, last_y, last_zenith_up, false);
+//    render_horizont(last_x, last_y, last_zenith_up, false);
 //    draw_line_relative(0,0,last_x,last_y, false);
     last_x = zenith_x;
     last_y = zenith_y;
     last_zenith_up = z<0;
-    render_horizont(last_x, last_y, last_zenith_up, true);
+    render_horizont(last_x, last_y, last_zenith_up);
 //    draw_line_relative(0,0,last_x,last_y, true);
   }
   

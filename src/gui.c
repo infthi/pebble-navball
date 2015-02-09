@@ -37,13 +37,13 @@ static void draw_interface() {
 //top right
       draw_circle_part(i, 143-k);
 //bottom right
-      draw_circle_part(144-i, 143-k);
+      draw_circle_part(143-i, 143-k);
 //bottom left
-      draw_circle_part(144-i, k);
+      draw_circle_part(143-i, k);
 //G bar
-      draw_circle_part(144-i, 151-k);
+      draw_circle_part(143-i, 151-k);
 //power bar
-      draw_circle_part(144-i, k-8);
+      draw_circle_part(143-i, k-8);
     }
   }
 }

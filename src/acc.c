@@ -39,7 +39,7 @@ static void acceleration_state_draw(float acc){
 //  APP_LOG(APP_LOG_LEVEL_INFO, "%d - %d : %s; %d", begin, end, fill_white?"white":"black", delta);
   
   for (line = begin; line<end; line++){
-    int real_line = 144-line-1;
+    int real_line = 143-line-1;
     int circle_line = line+1;
     int line_end = circle_144[circle_line];
     int line_offset = row_size*real_line;
