@@ -120,6 +120,10 @@ void draw_level(){
   }
 }
 
+void chess_fill(uint8_t line, uint8_t begin, uint8_t end){
+}
+
+
 //minimal size which looks smooth enough
 #define SIDE_SIZE_LARGE 10
 #define SIDE_SIZE_FAST 3
@@ -141,14 +145,14 @@ No trigonometry; we'll make it one navball radius under the zenith.
   int16_t SIDE_SIZE;
 
   int16_t z_vector_length = zenith_x*zenith_x+zenith_y*zenith_y;
-  if (z_vector_length<4) {
+  if (z_vector_length<2) {
     //zenith is almost in the center of navball; horizont invisible
     return;
   }
   int16_t norm_z_vector_length = REAL_BALL_SIZE*REAL_BALL_SIZE;
   float z_vector_koeff = fsqrt((float)norm_z_vector_length/(float)z_vector_length);
 
-  if (z_vector_koeff<2){
+  if (z_vector_koeff<1.5f){
     SIDE_SIZE = SIDE_SIZE_FAST;
     side_points = side_points_fast;
     pivot_koeff = pivot_koeff_fast;
@@ -181,7 +185,7 @@ No trigonometry; we'll make it one navball radius under the zenith.
     pivot_y = z_y_norm-zenith_y;
   }
 
-  int side_point_idx;
+  uint8_t side_point_idx;
   for (side_point_idx=1; side_point_idx<SIDE_SIZE; side_point_idx++){
     int side_koeff = SIDE_SIZE-side_point_idx;
     side_points[side_point_idx*2] = side_points[0]*side_koeff/SIDE_SIZE+pivot_x*pivot_koeff[side_point_idx]/100;
@@ -192,7 +196,7 @@ No trigonometry; we'll make it one navball radius under the zenith.
 //int16_t test_y = side_points[1]/2+pivot_y*4/5;
   }
 
-  int idx;
+  uint8_t idx;
   for (idx=0; idx<SIDE_SIZE-1; idx++){
     draw_line_relative(side_points[idx*2], side_points[idx*2+1], side_points[idx*2+2], side_points[idx*2+3]);
     draw_line_relative(side_points[SIDE_SIZE*4-4-idx*2], side_points[SIDE_SIZE*4-4-idx*2+1], side_points[SIDE_SIZE*4-4-idx*2+2], side_points[SIDE_SIZE*4-4-idx*2+3]);
