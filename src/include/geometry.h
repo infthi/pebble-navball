@@ -54,4 +54,12 @@ float invSqrt(float x);
 
 float fsqrt(float x);
 
+inline int16_t min(int16_t a, int16_t b){
+  return a<b?a:b;
+}
+
+inline int16_t max(int16_t a, int16_t b){
+  return a<b?b:a;
+}
+
 #endif

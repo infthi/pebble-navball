@@ -120,7 +120,23 @@ void draw_level(){
   }
 }
 
-void chess_fill(uint8_t line, uint8_t begin, uint8_t end){
+void chess_fill(uint8_t line, int16_t begin, int16_t end){
+  uint8_t circle_line_idx;
+  if (line>72){
+    circle_line_idx = 143-line;
+  } else {
+    circle_line_idx = line;
+  }
+  if (begin<0)
+  {
+    begin = circle_144[circle_line_idx];
+  }
+  if (end<0)
+  {
+    end = 144-circle_144[circle_line_idx];
+  }
+
+  draw_line_pure(begin, line, end, line);
 }
 
 
@@ -173,7 +189,7 @@ No trigonometry; we'll make it one navball radius under the zenith.
   int16_t pivot_x;
   int16_t pivot_y;
   
-  if (is_zenith_above){
+  if (!is_zenith_above){
     //zenith is above the navball (and is visible), horizont one radius below the zenith
     pivot_x = zenith_x-z_x_norm;
     pivot_y = zenith_y-z_y_norm;
@@ -196,14 +212,51 @@ No trigonometry; we'll make it one navball radius under the zenith.
 //int16_t test_y = side_points[1]/2+pivot_y*4/5;
   }
 
+  int16_t highest_horizont_point = 72, lowest_horizont_point = -72;
+  uint8_t point1_offset=0, point2_offset=0, point3_offset=0, point4_offset=0;
+
   uint8_t idx;
   for (idx=0; idx<SIDE_SIZE-1; idx++){
-    draw_line_relative(side_points[idx*2], side_points[idx*2+1], side_points[idx*2+2], side_points[idx*2+3]);
-    draw_line_relative(side_points[SIDE_SIZE*4-4-idx*2], side_points[SIDE_SIZE*4-4-idx*2+1], side_points[SIDE_SIZE*4-4-idx*2+2], side_points[SIDE_SIZE*4-4-idx*2+3]);
+    point1_offset = idx*2;
+    point2_offset = idx*2+2;
+    point3_offset = SIDE_SIZE*4-4-idx*2+2;
+    point4_offset = SIDE_SIZE*4-4-idx*2;
+
+    draw_line_relative(side_points[point1_offset], side_points[point1_offset+1], side_points[point2_offset], side_points[point2_offset+1]);
+    draw_line_relative(side_points[point3_offset], side_points[point3_offset+1], side_points[point4_offset], side_points[point4_offset+1]);
+
+    highest_horizont_point = min(highest_horizont_point, side_points[point1_offset+1]);
+    highest_horizont_point = min(highest_horizont_point, side_points[point3_offset+1]);
+    lowest_horizont_point = max(lowest_horizont_point, side_points[point1_offset+1]);
+    lowest_horizont_point = max(lowest_horizont_point, side_points[point3_offset+1]);
 //    draw_line_relative(side_points[0], side_points[1], test_x, test_y, on);
   }
-  draw_line_relative(side_points[idx*2], side_points[idx*2+1], pivot_x, pivot_y);
-  draw_line_relative(side_points[SIDE_SIZE*4-2-idx*2], side_points[SIDE_SIZE*4-2-idx*2+1], pivot_x, pivot_y);
+  point1_offset = idx*2+2;
+  point3_offset = SIDE_SIZE*4-4-idx*2;
+  
+  draw_line_relative(side_points[point1_offset], side_points[point1_offset+1], pivot_x, pivot_y);
+  draw_line_relative(side_points[point3_offset], side_points[point3_offset+1], pivot_x, pivot_y);
+  
+  highest_horizont_point = min(highest_horizont_point, side_points[point1_offset+1]);
+  highest_horizont_point = min(highest_horizont_point, side_points[point3_offset+1]);
+  lowest_horizont_point = max(lowest_horizont_point, side_points[point1_offset+1]);
+  lowest_horizont_point = max(lowest_horizont_point, side_points[point3_offset+1]);
+  highest_horizont_point = min(highest_horizont_point, pivot_y);
+  lowest_horizont_point = max(lowest_horizont_point, pivot_y);
+
+  if (zenith_y<72){
+    lowest_horizont_point += 72;
+    while(lowest_horizont_point<144){
+      chess_fill(lowest_horizont_point, -1, -1);
+      lowest_horizont_point++;
+    }
+  } else {
+    highest_horizont_point += 72;
+    while(highest_horizont_point>0){
+      chess_fill(highest_horizont_point+72, -1, -1);
+      highest_horizont_point--;
+    }
+  }
 //  draw_line_relative(pivot_x, pivot_y, side_points[SIDE_SIZE*4-2], side_points[SIDE_SIZE*4-1], on);
 }
 
