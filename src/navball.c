@@ -5,6 +5,7 @@
 
 uint8_t begin[2], end[2];
 uint8_t y_step;
+uint8_t ground[144*3];
 
 //inline uint8_t abs(uint8_t x){
 //    return (x>0)?x:-x;
@@ -14,6 +15,27 @@ inline void put_pixel(uint8_t x, uint8_t y){
   int offset = row_size*(y)+(x/8);
   uint8_t flag = 1<<(x%8);
   bitmap_data[offset] |= flag;
+}
+
+inline void put_line_pixel(uint8_t x, uint8_t y){
+  put_pixel(x, y);
+  //if neighbour pixels are already max or min, we're drawing line part, and we must ignore something
+  uint8_t right_bound = ground[y*3];
+  uint8_t left_bound = ground[y*3+1];
+  uint8_t last_marked = ground[y*3+2];
+
+  if ((last_marked==x)||(last_marked==x-1)||(last_marked==x+1)||(last_marked==x-2)||(last_marked==x+2)){
+    ground[y*3+2] = x;
+    return;
+  }
+
+  ground[y*3] = max(right_bound, x);
+  ground[y*3+1] = min(left_bound, x);
+  ground[y*3+2] = x;
+  
+//  if (y<30){
+//    APP_LOG(APP_LOG_LEVEL_INFO, "%d: %d-%d", y, ground[y*3+1], ground[3*2]);
+//  }
 }
 
 void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1){
@@ -69,7 +91,7 @@ void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1){
 
   int16_t D = 2*dy - dx;
   
-  reverse?put_pixel(y0,x0):put_pixel(x0,y0);
+  reverse?put_line_pixel(y0,x0):put_line_pixel(x0,y0);
   
   int16_t x, y=y0;
   for (x = x0+1; x<=x1; x++){
@@ -79,7 +101,7 @@ void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1){
     } else {
       D = D + (2*dy);
     }
-    reverse?put_pixel(y,x):put_pixel(x,y);
+    reverse?put_line_pixel(y,x):put_line_pixel(x,y);
   }
 }
 
@@ -120,23 +142,72 @@ void draw_level(){
   }
 }
 
-void chess_fill(uint8_t line, int16_t begin, int16_t end){
+void chess_fill_impl(uint8_t begin, uint8_t end, uint8_t line){
+//  APP_LOG(APP_LOG_LEVEL_INFO, "Filling %d: [%d-%d]", line, begin, end);
+  uint8_t pattern = (line%2==0)?chess[0]:chess[1];
+  uint16_t offset = row_size*line; 
+  if (end-begin<8){
+  } else {
+    uint8_t mod_b = begin%8;
+    uint8_t mod_e = end%8;
+    if (mod_b!=0){
+      bitmap_data[offset+begin/8] |= (pattern&remaining_right[7-mod_b]);
+      begin+=8-mod_b;
+    }
+    while (begin<end-mod_e){
+      bitmap_data[offset+begin/8] |= pattern;
+      begin+=8;
+    }
+    if (mod_e!=0){
+      bitmap_data[offset+begin/8] |= (pattern&remaining_left[mod_e]);
+    }
+  }
+}
+
+void chess_fill(uint8_t line, bool is_zenith_above){
   uint8_t circle_line_idx;
+  int16_t begin = ground[line*3+1];
+  int16_t end = ground[line*3];
   if (line>72){
     circle_line_idx = 143-line;
   } else {
     circle_line_idx = line;
   }
-  if (begin<0)
-  {
+  if (begin==255) {
+    //line endpoint were not initialized; draw whole line
     begin = circle_144[circle_line_idx];
-  }
-  if (end<0)
-  {
     end = 144-circle_144[circle_line_idx];
+  } else {
+    if (is_zenith_above){//i do not know, why it works without '!'
+      //we're drawing more-than-half; check circle center and draw on the same side
+      if (begin==end){
+        if (ground[72*3]<=72){
+          //center is on the right; fill begin-circle
+          end = 144-circle_144[circle_line_idx];
+        } else {
+          //center is on the left; fill circle-end
+          begin = circle_144[circle_line_idx];
+        }
+//        APP_LOG(APP_LOG_LEVEL_INFO, "Fixing %d: [%d-%d]", line, begin, end);
+      }
+    } else {
+      //we're drawing less-than-half; if begin and end are set, we must fill circle-begin; gap; end-circle;
+      if (begin==end){
+        if (ground[72*3]>72){
+          //center is on the right; fill begin-circle
+          end = 144-circle_144[circle_line_idx];
+        } else {
+          //center is on the left; fill circle-end
+          begin = circle_144[circle_line_idx];
+        }
+      } else {
+        chess_fill_impl(circle_144[circle_line_idx], begin, line);
+        chess_fill_impl(end, 144-circle_144[circle_line_idx], line);
+        return;
+      }
+    }
   }
-
-  draw_line_pure(begin, line, end, line);
+  chess_fill_impl(begin, end, line);
 }
 
 
@@ -159,6 +230,8 @@ No trigonometry; we'll make it one navball radius under the zenith.
 */
   int16_t *side_points, *pivot_koeff;
   int16_t SIDE_SIZE;
+  uint8_t idx;
+
 
   int16_t z_vector_length = zenith_x*zenith_x+zenith_y*zenith_y;
   if (z_vector_length<2) {
@@ -195,11 +268,16 @@ No trigonometry; we'll make it one navball radius under the zenith.
     pivot_y = zenith_y-z_y_norm;
   } else {
     //zenith is below the navball (and is invisible)
-//    int16_t remaining_x = z_x_norm;
-//    int16_t remaining_y = z_y_norm;
     pivot_x = z_x_norm-zenith_x;
     pivot_y = z_y_norm-zenith_y;
   }
+
+  for (idx=0; idx<144; idx++){
+    ground[idx*3] = 0;
+    ground[idx*3+1] = 255;
+    ground[idx*3+2] = 255;
+  }
+
 
   uint8_t side_point_idx;
   for (side_point_idx=1; side_point_idx<SIDE_SIZE; side_point_idx++){
@@ -208,14 +286,11 @@ No trigonometry; we'll make it one navball radius under the zenith.
     side_points[side_point_idx*2+1] = side_points[1]*side_koeff/SIDE_SIZE+pivot_y*pivot_koeff[side_point_idx]/100;
     side_points[SIDE_SIZE*4-side_point_idx*2-2] = side_points[SIDE_SIZE*4-2]*side_koeff/SIDE_SIZE+pivot_x*pivot_koeff[side_point_idx]/100;
     side_points[SIDE_SIZE*4-side_point_idx*2-1] = side_points[SIDE_SIZE*4-1]*side_koeff/SIDE_SIZE+pivot_y*pivot_koeff[side_point_idx]/100;
-//int16_t test_x = side_points[0]/2+pivot_x*4/5;
-//int16_t test_y = side_points[1]/2+pivot_y*4/5;
   }
 
   int16_t highest_horizont_point = 72, lowest_horizont_point = -72;
   uint8_t point1_offset=0, point2_offset=0, point3_offset=0, point4_offset=0;
 
-  uint8_t idx;
   for (idx=0; idx<SIDE_SIZE-1; idx++){
     point1_offset = idx*2;
     point2_offset = idx*2+2;
@@ -229,7 +304,6 @@ No trigonometry; we'll make it one navball radius under the zenith.
     highest_horizont_point = min(highest_horizont_point, side_points[point3_offset+1]);
     lowest_horizont_point = max(lowest_horizont_point, side_points[point1_offset+1]);
     lowest_horizont_point = max(lowest_horizont_point, side_points[point3_offset+1]);
-//    draw_line_relative(side_points[0], side_points[1], test_x, test_y, on);
   }
   point1_offset = idx*2+2;
   point3_offset = SIDE_SIZE*4-4-idx*2;
@@ -244,16 +318,28 @@ No trigonometry; we'll make it one navball radius under the zenith.
   highest_horizont_point = min(highest_horizont_point, pivot_y);
   lowest_horizont_point = max(lowest_horizont_point, pivot_y);
 
-  if (zenith_y<72){
-    lowest_horizont_point += 72;
+  lowest_horizont_point += 72;
+  highest_horizont_point += 72;
+  if (zenith_y<0){
+    highest_horizont_point++;
+//    APP_LOG(APP_LOG_LEVEL_INFO, "%d-%d-%d", highest_horizont_point, lowest_horizont_point, 143);
+    while (highest_horizont_point<lowest_horizont_point){
+      chess_fill(highest_horizont_point, is_zenith_above);
+      highest_horizont_point++;
+    }
     while(lowest_horizont_point<144){
-      chess_fill(lowest_horizont_point, -1, -1);
+      chess_fill(lowest_horizont_point, is_zenith_above);
       lowest_horizont_point++;
     }
   } else {
-    highest_horizont_point += 72;
+    lowest_horizont_point--;
+//    APP_LOG(APP_LOG_LEVEL_INFO, "%d-%d-%d", highest_horizont_point, lowest_horizont_point, 143);
+    while (highest_horizont_point<lowest_horizont_point){
+      chess_fill(lowest_horizont_point, is_zenith_above);
+      lowest_horizont_point--;
+    }
     while(highest_horizont_point>0){
-      chess_fill(highest_horizont_point+72, -1, -1);
+      chess_fill(highest_horizont_point, is_zenith_above);
       highest_horizont_point--;
     }
   }
@@ -321,22 +407,21 @@ void clean_up(){
   }
 }
 
+bool initial_run = true;
+
 void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
+//  if (initial_run){
+//  initial_run = false;
   clean_up();
   int16_t zenith_x = -x*REAL_BALL_SIZE*inv_sqrt;
   int16_t zenith_y = y*REAL_BALL_SIZE*inv_sqrt;
 
   //(re-)draw line connecting center and zenith
-  {
-//    render_horizont(last_x, last_y, last_zenith_up, false);
-//    draw_line_relative(0,0,last_x,last_y, false);
-    last_x = zenith_x;
-    last_y = zenith_y;
-    last_zenith_up = z<0;
-    render_horizont(last_x, last_y, last_zenith_up);
-//    draw_line_relative(0,0,last_x,last_y, true);
-  }
+  render_horizont(zenith_x, zenith_y, z<0);
+//    render_horizont(90, 50, true);
   
   //finally, draw v-level
   draw_level();
+
+//  }
 }
