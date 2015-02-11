@@ -232,10 +232,21 @@ No trigonometry; we'll make it one navball radius under the zenith.
   int16_t SIDE_SIZE;
   uint8_t idx;
 
+  for (idx=0; idx<144; idx++){
+    ground[idx*3] = 0;
+    ground[idx*3+1] = 255;
+    ground[idx*3+2] = 255;
+  }
+
 
   int16_t z_vector_length = zenith_x*zenith_x+zenith_y*zenith_y;
   if (z_vector_length<2) {
     //zenith is almost in the center of navball; horizont invisible
+    if (is_zenith_above){
+      for (idx=0; idx<144; idx++){
+        chess_fill(idx, true);
+      }
+    }
     return;
   }
   int16_t norm_z_vector_length = REAL_BALL_SIZE*REAL_BALL_SIZE;
@@ -272,11 +283,6 @@ No trigonometry; we'll make it one navball radius under the zenith.
     pivot_y = z_y_norm-zenith_y;
   }
 
-  for (idx=0; idx<144; idx++){
-    ground[idx*3] = 0;
-    ground[idx*3+1] = 255;
-    ground[idx*3+2] = 255;
-  }
 
 
   uint8_t side_point_idx;
