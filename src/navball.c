@@ -24,7 +24,10 @@ inline void put_line_pixel(uint8_t x, uint8_t y){
   uint8_t left_bound = ground[y*3+1];
   uint8_t last_marked = ground[y*3+2];
 
-  if ((last_marked==x)||(last_marked==x-1)||(last_marked==x+1)||(last_marked==x-2)||(last_marked==x+2)){
+  int16_t diff = (last_marked-x);
+//  APP_LOG(APP_LOG_LEVEL_INFO, "%d", diff);
+  if (abs(diff)<=4){
+//  if ((last_marked==x)||(last_marked==x-1)||(last_marked==x+1)||(last_marked==x-2)||(last_marked==x+2)){
     ground[y*3+2] = x;
     return;
   }
