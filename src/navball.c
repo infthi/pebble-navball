@@ -167,7 +167,7 @@ void chess_fill_impl(uint8_t begin, uint8_t end, uint8_t line){
   }
 }
 
-void chess_fill(uint8_t line, bool is_zenith_above){
+void chess_fill(uint8_t line, int16_t zenith_z, int16_t zenith_x){
   uint8_t circle_line_idx;
   int16_t begin = ground[line*3+1];
   int16_t end = ground[line*3];
@@ -176,37 +176,52 @@ void chess_fill(uint8_t line, bool is_zenith_above){
   } else {
     circle_line_idx = line;
   }
+  //some fine-tuning...
+  if (ground[72*3]==72){
+    zenith_z = 0;
+  }
+
+//  if (line==80){
+//    APP_LOG(APP_LOG_LEVEL_INFO, "%d - %d - %d [%d - %d]", line, zenith_z, zenith_x, begin, end);
+//  }
   if (begin==255) {
     //line endpoint were not initialized; draw whole line
     begin = circle_144[circle_line_idx];
     end = 144-circle_144[circle_line_idx];
   } else {
-    if (is_zenith_above){//i do not know, why it works without '!'
+    if (zenith_z<0){
       //we're drawing more-than-half; check circle center and draw on the same side
       if (begin==end){
-        if (ground[72*3]<=72){
+        if (ground[72*3]<72){
           //center is on the right; fill begin-circle
           end = 144-circle_144[circle_line_idx];
-        } else {
+        } else if (ground[72*3]>72) {
           //center is on the left; fill circle-end
           begin = circle_144[circle_line_idx];
-        }
+        } //and if it equals 72 than z==0. other case.
 //        APP_LOG(APP_LOG_LEVEL_INFO, "Fixing %d: [%d-%d]", line, begin, end);
       }
-    } else {
+    } else if (zenith_z>0) {
       //we're drawing less-than-half; if begin and end are set, we must fill circle-begin; gap; end-circle;
       if (begin==end){
         if (ground[72*3]>72){
           //center is on the right; fill begin-circle
           end = 144-circle_144[circle_line_idx];
-        } else {
+        } else if (ground[72*3]<72) {
           //center is on the left; fill circle-end
           begin = circle_144[circle_line_idx];
-        }
+        } //and if it equals 72 than z==0. other case.
       } else {
         chess_fill_impl(circle_144[circle_line_idx], begin, line);
         chess_fill_impl(end, 144-circle_144[circle_line_idx], line);
         return;
+      }
+    } else {
+      //we're drawing exactly half; which one depends on where zenith is
+      if (zenith_x>0){
+        begin = circle_144[circle_line_idx];
+      } else {
+        end = 144-circle_144[circle_line_idx];
       }
     }
   }
@@ -222,7 +237,7 @@ int16_t pivot_koeff_large[SIDE_SIZE_LARGE];
 int16_t side_points_fast[SIDE_SIZE_FAST*4];
 int16_t pivot_koeff_fast[SIDE_SIZE_FAST];
 
-void render_horizont(int16_t zenith_x, int16_t zenith_y, bool is_zenith_above){
+void render_horizont(int16_t zenith_x, int16_t zenith_y, int16_t zenith_z){
 /*
 We see a navball's horizont as a half of circle's projection on a navball
 
@@ -245,9 +260,9 @@ No trigonometry; we'll make it one navball radius under the zenith.
   int16_t z_vector_length = zenith_x*zenith_x+zenith_y*zenith_y;
   if (z_vector_length<2) {
     //zenith is almost in the center of navball; horizont invisible
-    if (is_zenith_above){
+    if (zenith_z<0){
       for (idx=0; idx<144; idx++){
-        chess_fill(idx, true);
+        chess_fill(idx, zenith_z, 0);
       }
     }
     return;
@@ -276,14 +291,17 @@ No trigonometry; we'll make it one navball radius under the zenith.
   int16_t pivot_x;
   int16_t pivot_y;
   
-  if (!is_zenith_above){
+  if (zenith_z>0){
     //zenith is above the navball (and is visible), horizont one radius below the zenith
     pivot_x = zenith_x-z_x_norm;
     pivot_y = zenith_y-z_y_norm;
-  } else {
+  } else if (zenith_z<0){
     //zenith is below the navball (and is invisible)
     pivot_x = z_x_norm-zenith_x;
     pivot_y = z_y_norm-zenith_y;
+  } else {
+    pivot_x = 0;
+    pivot_y = 0;
   }
 
 
@@ -331,24 +349,24 @@ No trigonometry; we'll make it one navball radius under the zenith.
   highest_horizont_point += 72;
   if (zenith_y<0){
     highest_horizont_point++;
-//    APP_LOG(APP_LOG_LEVEL_INFO, "%d-%d-%d", highest_horizont_point, lowest_horizont_point, 143);
+//    APP_LOG(APP_LOG_LEVEL_INFO, "%d-%d-%d", highest_horizont_point, zenith_z, zenith_x);
     while (highest_horizont_point<lowest_horizont_point){
-      chess_fill(highest_horizont_point, is_zenith_above);
+      chess_fill(highest_horizont_point, zenith_z, zenith_x);
       highest_horizont_point++;
     }
     while(lowest_horizont_point<144){
-      chess_fill(lowest_horizont_point, is_zenith_above);
+      chess_fill(lowest_horizont_point, zenith_z, zenith_x);
       lowest_horizont_point++;
     }
   } else {
     lowest_horizont_point--;
 //    APP_LOG(APP_LOG_LEVEL_INFO, "%d-%d-%d", highest_horizont_point, lowest_horizont_point, 143);
     while (highest_horizont_point<lowest_horizont_point){
-      chess_fill(lowest_horizont_point, is_zenith_above);
+      chess_fill(lowest_horizont_point, zenith_z, zenith_x);
       lowest_horizont_point--;
     }
     while(highest_horizont_point>0){
-      chess_fill(highest_horizont_point, is_zenith_above);
+      chess_fill(highest_horizont_point, zenith_z, zenith_x);
       highest_horizont_point--;
     }
   }
@@ -421,12 +439,22 @@ bool initial_run = true;
 void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
 //  if (initial_run){
 //  initial_run = false;
+/*  x = -952;
+  y = -296;
+  z = -8;
+  int32_t xx = x;
+  int32_t yy = y;
+  int32_t zz = z;
+
+  inv_sqrt = invSqrt(xx*xx+yy*yy+zz*zz);*/
+
   clean_up();
   int16_t zenith_x = -x*REAL_BALL_SIZE*inv_sqrt;
   int16_t zenith_y = y*REAL_BALL_SIZE*inv_sqrt;
 
+//  APP_LOG(APP_LOG_LEVEL_INFO, "%d %d %d", x, y, z);
   //(re-)draw line connecting center and zenith
-  render_horizont(zenith_x, zenith_y, z<0);
+  render_horizont(zenith_x, zenith_y, z);
 //    render_horizont(90, 50, true);
   
   //finally, draw v-level
