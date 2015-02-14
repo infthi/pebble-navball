@@ -32,7 +32,6 @@ void update_sas_impl(){
     }
   }
   text_layer_set_text_color(sas_layer, on?GColorBlack:GColorWhite);
-  refresh_gui();
   update_sas_timer = NULL;
 }
 

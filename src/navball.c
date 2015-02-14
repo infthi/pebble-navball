@@ -149,7 +149,7 @@ void chess_fill_impl(uint8_t begin, uint8_t end, uint8_t line){
 //  APP_LOG(APP_LOG_LEVEL_INFO, "Filling %d: [%d-%d]", line, begin, end);
   uint8_t pattern = (line%2==0)?chess[0]:chess[1];
   uint16_t offset = row_size*line; 
-  if (end-begin<8){
+  if (end/8==begin/8){
   } else {
     uint8_t mod_b = begin%8;
     uint8_t mod_e = end%8;

@@ -1,5 +1,6 @@
 #define __ACCSERVICE__
 #include <pebble.h>
+#include <include/gui.h>
 #include <include/geometry.h>
 #include <include/acc_service.h>
 #include <include/sas.h>
@@ -128,6 +129,7 @@ static void data_handler(AccelData *data, uint32_t num_samples) {
   update_sas(!moving);
   acc_handler(data[0].x, data[0].y, data[0].z, inv_sqrt);
   render_navball(data[0].x, data[0].y, data[0].z, inv_sqrt);
+  refresh_gui();
 }
 
 void init_acc_service(){

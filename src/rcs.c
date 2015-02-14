@@ -29,7 +29,6 @@ void update_rcs(bool on){
     }
   }
   text_layer_set_text_color(rcs_layer, on?GColorBlack:GColorWhite);
-  refresh_gui();
 
   if (initial_setup){
     //to prevent labs on wf loading
