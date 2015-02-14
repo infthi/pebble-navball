@@ -150,6 +150,11 @@ void chess_fill_impl(uint8_t begin, uint8_t end, uint8_t line){
   uint8_t pattern = (line%2==0)?chess[0]:chess[1];
   uint16_t offset = row_size*line; 
   if (end/8==begin/8){
+    if (end!=begin){
+      uint8_t mask = remaining_right[7-begin%8];
+      mask &= remaining_left[end%8];
+      bitmap_data[offset+begin/8] |= pattern&mask;
+    }
   } else {
     uint8_t mod_b = begin%8;
     uint8_t mod_e = end%8;
@@ -158,7 +163,7 @@ void chess_fill_impl(uint8_t begin, uint8_t end, uint8_t line){
       begin+=8-mod_b;
     }
     while (begin<end-mod_e){
-      bitmap_data[offset+begin/8] |= pattern;
+      bitmap_data[offset+begin/8] = pattern;
       begin+=8;
     }
     if (mod_e!=0){
