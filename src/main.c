@@ -2,6 +2,8 @@
 #include <include/gui.h>
 #include <include/clock.h>
 
+#define PRESENTATION_MODE true
+
 Window *window;
 Layer *s_clock_layer;
 
@@ -38,6 +40,9 @@ static void init(void) {
   });
   window_stack_push(window, true);
   APP_LOG(APP_LOG_LEVEL_INFO, "Done loading window: %p", window);
+  #if PRESENTATION_MODE
+    light_enable(true);
+  #endif
 }
 
 static void deinit(void) {
@@ -45,6 +50,9 @@ static void deinit(void) {
   deinit_clock();
   layer_destroy(s_clock_layer);
   window_destroy(window);
+  #if PRESENTATION_MODE
+    light_enable(false);
+  #endif
 }
 
 #include <math.h>
