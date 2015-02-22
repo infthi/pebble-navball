@@ -78,7 +78,7 @@ static void acceleration_state_draw(float acc){
 void acc_handler(int16_t x, int16_t y, int16_t z, float inv_sqrt){
   static char s_buffer[16];
 
-  float acc = 1.0f/(960.0f*inv_sqrt); //960 instead of to tune it to show 1G in stand-by mode for me
+  float acc = 1.0f/(980.0f*inv_sqrt); //960 instead of to tune it to show 1G in stand-by mode for me
   float frac = acc;
   while (frac>1.0f){
     frac-=1.0f;
