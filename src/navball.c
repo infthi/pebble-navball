@@ -28,12 +28,6 @@ inline void put_line_pixel(uint8_t x, uint8_t y){
   uint8_t last_marked = ground[y*3+2];
 
   int16_t diff = (last_marked-x);
-//  APP_LOG(APP_LOG_LEVEL_INFO, "%d", diff);
-#if SINGLE_RENDER
-  if (y==69){
-    APP_LOG(APP_LOG_LEVEL_INFO, "%d :: %d", x, y);
-  }
-#endif
   if (abs(diff)<=4){
 //  if ((last_marked==x)||(last_marked==x-1)||(last_marked==x+1)||(last_marked==x-2)||(last_marked==x+2)){
     ground[y*3+2] = x;
@@ -43,12 +37,6 @@ inline void put_line_pixel(uint8_t x, uint8_t y){
   ground[y*3] = max(right_bound, x);
   ground[y*3+1] = min(left_bound, x);
   ground[y*3+2] = x;
-  
-#if SINGLE_RENDER
-  if (y==69){
-    APP_LOG(APP_LOG_LEVEL_INFO, "%d: %d-%d", y, ground[y*3+1], ground[3*2]);
-  }
-#endif
 }
 
 void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1){
@@ -156,7 +144,6 @@ void draw_level(){
 }
 
 void chess_fill_impl(uint8_t begin, uint8_t end, uint8_t line){
-//  APP_LOG(APP_LOG_LEVEL_INFO, "Filling %d: [%d-%d]", line, begin, end);
   uint8_t pattern = (line%2==0)?chess[0]:chess[1];
   uint16_t offset = row_size*line; 
   if (end/8==begin/8){
@@ -190,11 +177,6 @@ void chess_fill(uint8_t line, int16_t zenith_z, int16_t zenith_x){
     circle_line_idx = 143-line;
   } else {
     circle_line_idx = line;
-  }
-
-  //some fine-tuning: if z is almost horizontal, let's glue horizont to center to reduce flickering
-  if (ground[72*3]==72){
-    zenith_z = 0;
   }
 
   if (begin==255) {
@@ -370,6 +352,16 @@ No trigonometry; we'll make it one navball radius under the zenith.
 
   lowest_horizont_point += 72;
   highest_horizont_point += 72;
+
+  
+  //some fine-tuning: if z is almost horizontal, let's glue horizont to center to reduce flickering, and vice versa
+  if (abs((int16_t)ground[72*3]-72)<=2){
+    zenith_z = 0;
+  }
+//  if (abs(zenith_z)<33){
+//    zenith_z = 0;
+//  }
+
   if (zenith_y<0){
     highest_horizont_point++;
 //    APP_LOG(APP_LOG_LEVEL_INFO, "%d-%d-%d", highest_horizont_point, zenith_z, zenith_x);
@@ -465,9 +457,9 @@ void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
 #if SINGLE_RENDER
   if (initial_run){
   initial_run = false;
-  x = 144;
-  y = -960;
-  z = -264;
+  x = -368;
+  y = -912;
+  z = -8;
   int32_t xx = x;
   int32_t yy = y;
   int32_t zz = z;
@@ -478,7 +470,7 @@ void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
   int16_t zenith_x = -x*REAL_BALL_SIZE*inv_sqrt;
   int16_t zenith_y = y*REAL_BALL_SIZE*inv_sqrt;
 
-//  APP_LOG(APP_LOG_LEVEL_INFO, "%d %d %d", x, y, z);
+// APP_LOG(APP_LOG_LEVEL_INFO, "%d %d %d", x, y, z);
   //(re-)draw line connecting center and zenith
   render_horizont(zenith_x, zenith_y, z);
 //    render_horizont(90, 50, true);
