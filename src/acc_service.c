@@ -12,14 +12,14 @@
 #define THRESHOLD_AXIS 200
 
 #define POWER_SAVE_CALM_STEPS 3
-#define XTREME_POWER_SAVING
+#define XTREME_POWER_SAVING true
 
 int16_t old_values[NUM_SAMPLES*3];
 int current_idx = 0;
 int samples_to_check = NUM_SAMPLES;
 bool last_moving = true;
 
-#ifdef XTREME_POWER_SAVING
+#if XTREME_POWER_SAVING
 int16_t buffer[] = {0, 0, 0};
 int8_t steps_to_pass = POWER_SAVE_CALM_STEPS;
 #endif
@@ -43,7 +43,7 @@ void set_sample_mode(bool moving){
     accel_service_set_sampling_rate(ACCEL_SAMPLING_10HZ);
     samples_to_check = NUM_SAMPLES*10/25;
 
-#ifdef XTREME_POWER_SAVING
+#if XTREME_POWER_SAVING
     buffer[0] = 0;
     buffer[1] = 0;
     buffer[2] = 0;
@@ -55,6 +55,28 @@ void set_sample_mode(bool moving){
     samples_to_check = NUM_SAMPLES;
   }
   APP_LOG(APP_LOG_LEVEL_INFO, "Accelerometer power-saving: %s", moving?"OFF":"ON");
+}
+
+int16_t prev_values[] = {0,0,0,0,0,0};
+
+
+//Simple data filter: current value=(current_value+old_value/2_old_old_Value/2)/2
+void filter(AccelData data){
+  int16_t x = data.x;
+  int16_t y = data.y;
+  int16_t z = data.z;
+
+  data.x = (data.x*2+prev_values[0]+prev_values[3])/4;
+  data.y = (data.y*2+prev_values[1]+prev_values[4])/4;
+  data.z = (data.z*2+prev_values[2]+prev_values[5])/4;
+
+  int idx;
+  for (idx=0; idx<3; idx++){
+    prev_values[idx] = prev_values[idx+3];
+  }
+  prev_values[3] = x;
+  prev_values[4] = y;
+  prev_values[5] = z;
 }
 
 bool compare_to_old_values(AccelData data){
@@ -100,7 +122,7 @@ bool compare_to_old_values(AccelData data){
 };
 
 static void data_handler(AccelData *data, uint32_t num_samples) {
-#ifdef XTREME_POWER_SAVING
+#if XTREME_POWER_SAVING
   if (!last_moving){
     //we are in power-saving mode
     buffer[0] += data[0].x/POWER_SAVE_CALM_STEPS;
@@ -119,6 +141,7 @@ static void data_handler(AccelData *data, uint32_t num_samples) {
     }
   }
 #endif
+  filter(data[0]);
   bool moving = compare_to_old_values(data[0]);
   int32_t x = data[0].x;
   int32_t y = data[0].y;
