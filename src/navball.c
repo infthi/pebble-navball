@@ -3,6 +3,9 @@
 
 #define REAL_BALL_SIZE 71
 
+//this one is for glitches debugging
+#define SINGLE_RENDER false
+
 uint8_t begin[2], end[2];
 uint8_t y_step;
 uint8_t ground[144*3];
@@ -26,6 +29,11 @@ inline void put_line_pixel(uint8_t x, uint8_t y){
 
   int16_t diff = (last_marked-x);
 //  APP_LOG(APP_LOG_LEVEL_INFO, "%d", diff);
+#if SINGLE_RENDER
+  if (y==69){
+    APP_LOG(APP_LOG_LEVEL_INFO, "%d :: %d", x, y);
+  }
+#endif
   if (abs(diff)<=4){
 //  if ((last_marked==x)||(last_marked==x-1)||(last_marked==x+1)||(last_marked==x-2)||(last_marked==x+2)){
     ground[y*3+2] = x;
@@ -36,9 +44,11 @@ inline void put_line_pixel(uint8_t x, uint8_t y){
   ground[y*3+1] = min(left_bound, x);
   ground[y*3+2] = x;
   
-//  if (y<30){
-//    APP_LOG(APP_LOG_LEVEL_INFO, "%d: %d-%d", y, ground[y*3+1], ground[3*2]);
-//  }
+#if SINGLE_RENDER
+  if (y==69){
+    APP_LOG(APP_LOG_LEVEL_INFO, "%d: %d-%d", y, ground[y*3+1], ground[3*2]);
+  }
+#endif
 }
 
 void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1){
@@ -181,14 +191,12 @@ void chess_fill(uint8_t line, int16_t zenith_z, int16_t zenith_x){
   } else {
     circle_line_idx = line;
   }
-  //some fine-tuning...
+
+  //some fine-tuning: if z is almost horizontal, let's glue horizont to center to reduce flickering
   if (ground[72*3]==72){
     zenith_z = 0;
   }
 
-//  if (line==80){
-//    APP_LOG(APP_LOG_LEVEL_INFO, "%d - %d - %d [%d - %d]", line, zenith_z, zenith_x, begin, end);
-//  }
   if (begin==255) {
     //line endpoint were not initialized; draw whole line
     begin = circle_144[circle_line_idx];
@@ -217,6 +225,7 @@ void chess_fill(uint8_t line, int16_t zenith_z, int16_t zenith_x){
           begin = circle_144[circle_line_idx];
         } //and if it equals 72 than z==0. other case.
       } else {
+        //rare case when we need to fill two parts: [circle-firstline] and [secondline-circle]. requires it's own case.
         chess_fill_impl(circle_144[circle_line_idx], begin, line);
         chess_fill_impl(end, 144-circle_144[circle_line_idx], line);
         return;
@@ -439,20 +448,23 @@ void clean_up(){
   }
 }
 
+#if SINGLE_RENDER
 bool initial_run = true;
+#endif
 
 void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
-//  if (initial_run){
-//  initial_run = false;
-/*  x = -952;
-  y = -296;
-  z = -8;
+#if SINGLE_RENDER
+  if (initial_run){
+  initial_run = false;
+  x = 144;
+  y = -960;
+  z = -264;
   int32_t xx = x;
   int32_t yy = y;
   int32_t zz = z;
 
-  inv_sqrt = invSqrt(xx*xx+yy*yy+zz*zz);*/
-
+  inv_sqrt = invSqrt(xx*xx+yy*yy+zz*zz);
+#endif
   clean_up();
   int16_t zenith_x = -x*REAL_BALL_SIZE*inv_sqrt;
   int16_t zenith_y = y*REAL_BALL_SIZE*inv_sqrt;
@@ -464,6 +476,7 @@ void render_navball(int16_t x, int16_t y, int16_t z, float inv_sqrt){
   
   //finally, draw v-level
   draw_level();
-
-//  }
+#if SINGLE_RENDER
+  }
+#endif
 }
