@@ -118,7 +118,7 @@ void draw_line_pure(int16_t ix0, int16_t iy0, int16_t ix1, int16_t iy1){
   }
 }
 
-inline void draw_line_relative(int16_t ix1, int16_t iy1, int16_t ix2, int16_t iy2){
+inline void draw_line_relative(int16_t ix1, int16_t iy1, int16_t ix2, int16_t iy2, uint8_t line_idx){
   draw_line_pure(ix1+72, iy1+72, ix2+72, iy2+72);
 }
 
@@ -330,34 +330,43 @@ No trigonometry; we'll make it one navball radius under the zenith.
   }
 
   int16_t highest_horizont_point = 72, lowest_horizont_point = -72;
-  uint8_t point1_offset=0, point2_offset=0, point3_offset=0, point4_offset=0;
+  uint8_t point1_offset=0, point2_offset=0;
 
+  highest_horizont_point = min(highest_horizont_point, pivot_y);
+  lowest_horizont_point = max(lowest_horizont_point, pivot_y);
+  uint8_t line_idx = 0;
   for (idx=0; idx<SIDE_SIZE-1; idx++){
     point1_offset = idx*2;
     point2_offset = idx*2+2;
-    point3_offset = SIDE_SIZE*4-4-idx*2+2;
-    point4_offset = SIDE_SIZE*4-4-idx*2;
 
-    draw_line_relative(side_points[point1_offset], side_points[point1_offset+1], side_points[point2_offset], side_points[point2_offset+1]);
-    draw_line_relative(side_points[point3_offset], side_points[point3_offset+1], side_points[point4_offset], side_points[point4_offset+1]);
+    draw_line_relative(side_points[point1_offset], side_points[point1_offset+1], side_points[point2_offset], side_points[point2_offset+1], line_idx++);
 
     highest_horizont_point = min(highest_horizont_point, side_points[point1_offset+1]);
-    highest_horizont_point = min(highest_horizont_point, side_points[point3_offset+1]);
     lowest_horizont_point = max(lowest_horizont_point, side_points[point1_offset+1]);
-    lowest_horizont_point = max(lowest_horizont_point, side_points[point3_offset+1]);
   }
-  point1_offset = idx*2+2;
-  point3_offset = SIDE_SIZE*4-4-idx*2;
   
-  draw_line_relative(side_points[point1_offset], side_points[point1_offset+1], pivot_x, pivot_y);
-  draw_line_relative(side_points[point3_offset], side_points[point3_offset+1], pivot_x, pivot_y);
+  draw_line_relative(side_points[point2_offset], side_points[point2_offset+1], pivot_x, pivot_y, line_idx++);
   
   highest_horizont_point = min(highest_horizont_point, side_points[point1_offset+1]);
-  highest_horizont_point = min(highest_horizont_point, side_points[point3_offset+1]);
   lowest_horizont_point = max(lowest_horizont_point, side_points[point1_offset+1]);
-  lowest_horizont_point = max(lowest_horizont_point, side_points[point3_offset+1]);
-  highest_horizont_point = min(highest_horizont_point, pivot_y);
-  lowest_horizont_point = max(lowest_horizont_point, pivot_y);
+
+  idx+=2;
+
+  point1_offset = idx*2;
+  draw_line_relative(pivot_x, pivot_y, side_points[point1_offset], side_points[point1_offset+1], line_idx++);
+  
+  highest_horizont_point = min(highest_horizont_point, side_points[point1_offset+1]);
+  lowest_horizont_point = max(lowest_horizont_point, side_points[point1_offset+1]);
+
+  for (; idx<SIDE_SIZE*2-1; idx++){
+    point1_offset = idx*2;
+    point2_offset = idx*2+2;
+
+    draw_line_relative(side_points[point1_offset], side_points[point1_offset+1], side_points[point2_offset], side_points[point2_offset+1], line_idx++);
+
+    highest_horizont_point = min(highest_horizont_point, side_points[point2_offset+1]);
+    lowest_horizont_point = max(lowest_horizont_point, side_points[point2_offset+1]);
+  }
 
   lowest_horizont_point += 72;
   highest_horizont_point += 72;
