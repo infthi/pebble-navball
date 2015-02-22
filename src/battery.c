@@ -64,7 +64,8 @@ static void battery_state_draw(uint8_t percent){
     }
 //    bitmap_data[line_offset] = fill_white?0xff:0x00;
   }
-  refresh_gui();
+//accelerometer service will refresh gui frequently; let's not make any possibilities for race conditions
+//  refresh_gui();
 }
 
 uint32_t last_animation_state = 100;

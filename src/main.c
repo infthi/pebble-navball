@@ -2,7 +2,7 @@
 #include <include/gui.h>
 #include <include/clock.h>
 
-#define PRESENTATION_MODE true
+#define PRESENTATION_MODE false
 
 Window *window;
 Layer *s_clock_layer;
